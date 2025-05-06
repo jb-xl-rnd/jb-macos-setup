@@ -2,7 +2,9 @@
   "bash_setup": {
     "core_packages": [
       "neovim",
-      "ffmpeg",
+      "git",
+      "wget",
+      "coreutils",
       "iterm2",
       "nmap",
       "wifi-password",
@@ -11,12 +13,20 @@
       "jq",
       "tmux",
       "macchina",
-      "uv"
+      "uv",
+      "python",
+      "pyenv",
+      "tree",
+      "rsync"
     ],
     "core_cask_apps": [
       "brave-browser",
+      "google-chrome",
+      "iterm2",
       "keepassxc", 
-      "visual-studio-code"
+      "visual-studio-code",
+      "rectangle",
+      "raycast"
     ]
   },
   "ansible_setup": {

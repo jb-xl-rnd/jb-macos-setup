@@ -2,9 +2,7 @@
   "brew_packages": [
     "neovim",
     "ffmpeg",
-    "iterm2",
     "nmap",
-    "rectangle",
     "bash-git-prompt",
     "mailsy",
     "wifi-password",
@@ -22,12 +20,29 @@
     "imagemagick",
     "dutis",
     "python",
-    "uv"
+    "uv",
+    "git",
+    "wget",
+    "coreutils",
+    "cmake",
+    "awscli",
+    "pyenv",
+    "go",
+    "node",
+    "deno",
+    "iftop",
+    "rsync",
+    "tree",
+    "lsusb",
+    "openvpn",
+    "asitop",
+    "zstd",
+    "xz",
+    "duti"
   ],
   "brew_cask_apps": [
     "brave-browser",
     "keepassxc",
-    "steam",
     "visual-studio-code",
     "discord",
     "vlc",
@@ -39,14 +54,21 @@
     "gimp",
     "prusaslicer",
     "ltspice",
-    "openvpn-connect",
     "sublime-text",
     "drawio",
     "balenaetcher",
     "arc",
     "google-chrome",
     "blheli-configurator",
-    "qgroundcontrol"
+    "qgroundcontrol",
+    "rectangle",
+    "iterm2",
+    "raycast",
+    "obsidian",
+    "webex",
+    "macfuse",
+    "orbstack",
+    "teamspeak-client"
   ],
   "mas_apps": [
     {
@@ -60,6 +82,26 @@
     {
       "id": "549083868",
       "name": "Display Menu"
+    },
+    {
+      "id": "1452453066",
+      "name": "Hidden Bar"
+    },
+    {
+      "id": "408981434",
+      "name": "iMovie"
+    },
+    {
+      "id": "409183694",
+      "name": "Keynote"
+    },
+    {
+      "id": "409203825",
+      "name": "Numbers"
+    },
+    {
+      "id": "409201541",
+      "name": "Pages"
     }
   ],
   "pip_packages": [
