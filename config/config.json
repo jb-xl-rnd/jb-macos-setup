@@ -1,0 +1,49 @@
+{
+  "bash_setup": {
+    "core_packages": [
+      "neovim",
+      "ffmpeg",
+      "iterm2",
+      "nmap",
+      "wifi-password",
+      "mas",
+      "htop",
+      "jq",
+      "tmux",
+      "macchina",
+      "uv"
+    ],
+    "core_cask_apps": [
+      "brave-browser",
+      "keepassxc", 
+      "visual-studio-code"
+    ]
+  },
+  "ansible_setup": {
+    "python": {
+      "enabled": true,
+      "version": "3.11.8"
+    },
+    "development": {
+      "enabled": true
+    },
+    "utilities": {
+      "enabled": true
+    },
+    "media": {
+      "enabled": true
+    },
+    "gaming": {
+      "enabled": true
+    },
+    "electronics": {
+      "enabled": true
+    }
+  },
+  "feature_flags": {
+    "use_pyenv": true,
+    "custom_shell_prompt": true,
+    "alias_compatibility": true,
+    "use_uv_package_manager": true
+  }
+}

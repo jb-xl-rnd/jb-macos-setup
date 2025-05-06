@@ -21,12 +21,20 @@ print_style() {
 show_menu() {
     echo ""
     print_style "===== MacOS Setup Menu =====" "info"
-    echo "1) Initial Setup (Homebrew, iTerm2, Shell)"
-    echo "2) Install Ansible"
-    echo "3) Run Ansible Playbook (Recommended)"
-    echo "4) Run Bash Setup Script"
-    echo "5) View Documentation"
-    echo "q) Quit"
+    print_style "1) Initial Setup (Homebrew, iTerm2, Shell)" "info"
+    echo ""
+    print_style "BASH SETUP (no dependencies):" "warning"
+    print_style "2) Minimal Bash Setup - Core tools only" "info"
+    print_style "3) Full Bash Setup - All tools and configurations" "info"
+    echo ""
+    print_style "ANSIBLE SETUP (comprehensive):" "warning"
+    print_style "4) Install Ansible" "info"
+    print_style "5) Run Ansible Playbook" "info"
+    echo ""
+    print_style "OTHER OPTIONS:" "warning"
+    print_style "6) Edit Configuration Files" "info"
+    print_style "7) View Documentation" "info"
+    print_style "q) Quit" "info"
     echo ""
 }
 
@@ -38,10 +46,18 @@ execute_option() {
             ./scripts/setupInitialMacOS.sh
             ;;
         2)
+            print_style "Running Minimal Bash Setup..." "info"
+            ./scripts/setupMacOs.sh --minimal
+            ;;
+        3)
+            print_style "Running Full Bash Setup..." "info"
+            ./scripts/setupMacOs.sh
+            ;;
+        4)
             print_style "Installing Ansible..." "info"
             ./scripts/setupAnsible.sh
             ;;
-        3)
+        5)
             print_style "Running Ansible Playbook..." "info"
             if ! command -v ansible-playbook &> /dev/null; then
                 print_style "Ansible not found. Installing first..." "warning"
@@ -49,11 +65,32 @@ execute_option() {
             fi
             ansible-playbook ./ansible/macos_setup.yml
             ;;
-        4)
-            print_style "Running Bash Setup Script..." "info"
-            ./scripts/setupMacOs.sh
+        6)
+            print_style "Edit Configuration Files:" "info"
+            echo "1) Edit Package List (packages.json)"
+            echo "2) Edit Shell Configurations (shell_config.json)"
+            echo "3) Edit Feature Flags (config.json)"
+            echo "b) Back to main menu"
+            read -p "Choose an option: " config_choice
+            case $config_choice in
+                1)
+                    ${EDITOR:-nano} ./config/packages.json
+                    ;;
+                2)
+                    ${EDITOR:-nano} ./config/shell_config.json
+                    ;;
+                3)
+                    ${EDITOR:-nano} ./config/config.json
+                    ;;
+                b)
+                    return
+                    ;;
+                *)
+                    print_style "Invalid option" "error"
+                    ;;
+            esac
             ;;
-        5)
+        7)
             print_style "Documentation:" "info"
             echo "1) Main README"
             echo "2) NTFS Support Instructions"
@@ -61,10 +98,10 @@ execute_option() {
             read -p "Choose an option: " doc_choice
             case $doc_choice in
                 1)
-                    cat README.md | less
+                    less README.md
                     ;;
                 2)
-                    cat docs/SetupNTFSSupportMacOS.md | less
+                    less docs/SetupNTFSSupportMacOS.md
                     ;;
                 b)
                     return
@@ -86,6 +123,25 @@ execute_option() {
 
 # Make scripts executable
 chmod +x ./scripts/*.sh
+
+# Create config dir if it doesn't exist
+if [ ! -d "./config" ]; then
+    print_style "Configuration directory not found. Creating..." "warning"
+    mkdir -p ./config
+    
+    # Check if we can download the default config files
+    if command -v curl &> /dev/null; then
+        print_style "Downloading default configuration files..." "info"
+        curl -s https://raw.githubusercontent.com/user/macos-setup/main/config/packages.json > ./config/packages.json 2>/dev/null || echo '{"brew_packages":[], "brew_cask_apps":[], "mas_apps":[], "pip_packages":[]}' > ./config/packages.json
+        curl -s https://raw.githubusercontent.com/user/macos-setup/main/config/shell_config.json > ./config/shell_config.json 2>/dev/null || echo '{"zsh_additions":[]}' > ./config/shell_config.json
+        curl -s https://raw.githubusercontent.com/user/macos-setup/main/config/config.json > ./config/config.json 2>/dev/null || echo '{"bash_setup":{"core_packages":[],"core_cask_apps":[]},"feature_flags":{}}' > ./config/config.json
+    else
+        # Create empty config files
+        echo '{"brew_packages":[], "brew_cask_apps":[], "mas_apps":[], "pip_packages":[]}' > ./config/packages.json
+        echo '{"zsh_additions":[]}' > ./config/shell_config.json
+        echo '{"bash_setup":{"core_packages":[],"core_cask_apps":[]},"feature_flags":{}}' > ./config/config.json
+    fi
+fi
 
 # Main loop
 while true; do

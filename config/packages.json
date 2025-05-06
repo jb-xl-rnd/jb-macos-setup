@@ -1,0 +1,76 @@
+{
+  "brew_packages": [
+    "neovim",
+    "ffmpeg",
+    "iterm2",
+    "nmap",
+    "rectangle",
+    "bash-git-prompt",
+    "mailsy",
+    "wifi-password",
+    "mas",
+    "mpv",
+    "htop",
+    "yt-dlp",
+    "jq",
+    "nvtop",
+    "orbstack",
+    "tmux",
+    "libusb",
+    "macchina",
+    "gnuplot",
+    "imagemagick",
+    "dutis",
+    "python",
+    "uv"
+  ],
+  "brew_cask_apps": [
+    "brave-browser",
+    "keepassxc",
+    "steam",
+    "visual-studio-code",
+    "discord",
+    "vlc",
+    "obs",
+    "zotero",
+    "spotify",
+    "autodesk-fusion360",
+    "raspberry-pi-imager",
+    "gimp",
+    "prusaslicer",
+    "ltspice",
+    "openvpn-connect",
+    "sublime-text",
+    "drawio",
+    "balenaetcher",
+    "arc",
+    "google-chrome",
+    "blheli-configurator",
+    "qgroundcontrol"
+  ],
+  "mas_apps": [
+    {
+      "id": "1246969117",
+      "name": "Steam Link"
+    },
+    {
+      "id": "1475387142",
+      "name": "Tailscale"
+    },
+    {
+      "id": "549083868",
+      "name": "Display Menu"
+    }
+  ],
+  "pip_packages": [
+    "pyftdi",
+    "adafruit-blinka",
+    "adafruit-circuitpython-bme280",
+    "wxPython",
+    "gnureadline",
+    "billiard",
+    "numpy",
+    "pyparsing",
+    "MAVProxy"
+  ]
+}

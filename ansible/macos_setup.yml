@@ -2,80 +2,17 @@
 - name: Setup MacOS Development Environment
   hosts: localhost
   become: false
+  vars_files:
+    - "../config/packages.json"
+    - "../config/config.json"
+    - "../config/shell_config.json"
+    
   vars:
     python_version: "3.11.8"  # Specify the Python version you want to use
-    brew_packages:
-      - neovim
-      - ffmpeg
-      - iterm2
-      - nmap
-      - rectangle
-      - bash-git-prompt
-      - mailsy
-      - wifi-password
-      - mas
-      - mpv
-      - htop
-      - yt-dlp
-      - jq
-      - nvtop
-      - orbstack
-      - libusb
-      - macchina
-      - gnuplot
-      - imagemagick
-      - pyenv  # Added pyenv
-      - openssl
-      - readline
-      - sqlite3
-      - xz
-      - zlib
-      - tcl-tk
-
-    brew_cask_apps:
-      - brave-browser
-      - keepassxc
-      - nextcloud
-      - steam
-      - visual-studio-code
-      - discord
-      - vlc
-      - obs
-      - zotero
-      - spotify
-      - autodesk-fusion360
-      - raspberry-pi-imager
-      - gimp
-      - prusaslicer
-      - ltspice
-      - obsidian
-      - sublime-text
-      - drawio
-      - balenaetcher
-      - arc
-      - google-chrome
-      - mactex
-      - skim
-      - blheli-configurator
-      - qgroundcontrol
-      - raycast
-
-    mas_apps:
-      - { id: 1246969117, name: "Steam Link" }
-      - { id: 1475387142, name: "Tailscale" }
-      - { id: 549083868, name: "Display Menu" }
-
-    pip_packages:
-      - pyftdi
-      - adafruit-blinka
-      - adafruit-circuitpython-bme280
-      - wxPython
-      - gnureadline
-      - billiard
-      - numpy
-      - pyparsing
-      - MAVProxy
-      - Pygments  # Corrected from pygmentize
+    use_uv: "{{ feature_flags.use_uv_package_manager | default(false) }}"
+    use_pyenv: "{{ feature_flags.use_pyenv | default(false) }}"
+    use_custom_prompt: "{{ feature_flags.custom_shell_prompt | default(false) }}"
+    use_alias_compat: "{{ feature_flags.alias_compatibility | default(false) }}"
 
   tasks:
     - name: Run software update
@@ -98,103 +35,91 @@
         state: present
       loop: "{{ mas_apps }}"
 
-    # Python environment setup
-    - name: Ensure .pyenv directory exists
-      file:
-        path: "{{ ansible_env.HOME }}/.pyenv"
-        state: directory
-        mode: '0755'
+    # Python environment setup with pyenv if enabled
+    - name: Configure Python with pyenv
+      block:
+        - name: Ensure .pyenv directory exists
+          file:
+            path: "{{ ansible_env.HOME }}/.pyenv"
+            state: directory
+            mode: '0755'
 
-    - name: Install Python with pyenv
-      shell: |
-        eval "$(pyenv init -)"
-        pyenv install {{ python_version }} -s
-        pyenv global {{ python_version }}
-      args:
-        executable: /bin/zsh
-        creates: "{{ ansible_env.HOME }}/.pyenv/versions/{{ python_version }}"
+        - name: Install Python with pyenv
+          shell: |
+            eval "$(pyenv init -)"
+            pyenv install {{ python_version }} -s
+            pyenv global {{ python_version }}
+          args:
+            executable: /bin/zsh
+            creates: "{{ ansible_env.HOME }}/.pyenv/versions/{{ python_version }}"
 
-    - name: Upgrade pip
-      shell: |
-        eval "$(pyenv init -)"
-        pip install --upgrade pip
-      args:
-        executable: /bin/zsh
+        - name: Upgrade pip
+          shell: |
+            eval "$(pyenv init -)"
+            pip install --upgrade pip
+          args:
+            executable: /bin/zsh
+      when: use_pyenv | bool
 
-    - name: Install Python packages
+    # UV package manager setup if enabled
+    - name: Configure UV package manager
+      block:
+        - name: Create UV virtualenv directory
+          file:
+            path: "{{ ansible_env.HOME }}/.venvs"
+            state: directory
+            mode: '0755'
+
+        - name: Install Python packages with UV
+          shell: |
+            eval "$(pyenv init -)" 
+            uv pip install {{ item }}
+          args:
+            executable: /bin/zsh
+          loop: "{{ pip_packages }}"
+      when: use_uv | bool
+
+    # Install Python packages with regular pip if UV is not enabled
+    - name: Install Python packages with pip
       shell: |
         eval "$(pyenv init -)"
         pip install {{ item }}
       args:
         executable: /bin/zsh
       loop: "{{ pip_packages }}"
+      when: not use_uv | bool
 
-    - name: Wait for MacTeX installation to complete
-      wait_for:
-        path: /Library/TeX/texbin/tlmgr
-        state: present
-        timeout: 300
-
-    - name: Add TeX paths to PATH
-      lineinfile:
-        path: ~/.zshrc
-        line: 'export PATH="/Library/TeX/texbin:$PATH"'
-        state: present
-
-    - name: Source updated PATH
-      shell: source ~/.zshrc
-      args:
-        executable: /bin/zsh
-
-    - name: Update TeX Live Manager
-      shell: |
-        export PATH="/Library/TeX/texbin:$PATH"
-        sudo tlmgr update --self
-      args:
-        executable: /bin/zsh
-
-    - name: Install LaTeX packages
-      shell: |
-        export PATH="/Library/TeX/texbin:$PATH"
-        sudo tlmgr install latexmk subfiles ctablestack luacode luatex85 silence \
-        emptypage framed biblatex logreq xstring chngcntr sectsty minted fvextra \
-        ifplatform ifoddpage relsize csquotes pgfplots circuitikz paralist enumitem \
-        glossaries datatool glossaries-english glossaries-italian glossaries-german \
-        mfirstuc xfor substr imakeidx fourier utopia quotchap soul \
-        collection-fontsrecommended algorithm2e xargs stanli preview standalone \
-        tikz-qtree latexindent
-      args:
-        executable: /bin/zsh
-
-    - name: Configure zshrc
+    # Configure zshrc with shell additions
+    - name: Configure zshrc with pyenv
       blockinfile:
         path: ~/.zshrc
         create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - Python Environment"
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Pyenv Configuration"
+        block: "{{ zsh_additions | selectattr('name', 'equalto', 'pyenv_config') | map(attribute='content') | join('') }}"
+      when: use_pyenv | bool
+
+    - name: Configure zshrc with UV
+      blockinfile:
+        path: ~/.zshrc
+        create: yes
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - UV Configuration"
+        block: "{{ zsh_additions | selectattr('name', 'equalto', 'uv_config') | map(attribute='content') | join('') }}"
+      when: use_uv | bool
+
+    - name: Configure zshrc with custom prompt
+      blockinfile:
+        path: ~/.zshrc
+        create: yes
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Custom Prompt"
+        block: "{{ zsh_additions | selectattr('name', 'equalto', 'custom_prompt') | map(attribute='content') | join('') }}"
+      when: use_custom_prompt | bool
+
+    - name: Configure zshrc with compatibility aliases
+      blockinfile:
+        path: ~/.zshrc
+        create: yes
+        marker: "# {mark} ANSIBLE MANAGED BLOCK - Compatibility Aliases"
         block: |
-          # Pyenv configuration
-          export PYENV_ROOT="$HOME/.pyenv"
-          export PATH="$PYENV_ROOT/bin:$PATH"
-          eval "$(pyenv init --path)"
-          eval "$(pyenv init -)"
-
-          # Custom prompt
-          set_prompt() {
-            USER_NAME="%F{red}$(whoami)%f"
-            BASEDIR=${PWD##*/}
-            SUBDIR=${PWD%/*}
-            SUBDIR=${SUBDIR##*/}
-            PS1="$USER_NAME@%F{green}$SUBDIR/%F{blue}$BASEDIR %f\$ "
-          }
-          precmd_functions+=(set_prompt)
-
-          # Ollama query function
-          function ollamaQuery() {
-            local prompt="$1"
-            local model="${2:-llama3}"
-            local escaped_prompt=$(printf %s "$prompt" | jq -Rsa .)
-            curl -s -X POST "http://ollama.local:11434/api/generate" \
-                 -H "Content-Type: application/json" \
-                 -d "{\"model\": \"$model\", \"prompt\": $escaped_prompt, \"stream\": false}" | jq -r ".response"
-          }
-          alias ollama="ollamaQuery"
+          {{ zsh_additions | selectattr('name', 'equalto', 'neofetch_alias') | map(attribute='content') | join('') }}
+          {{ zsh_additions | selectattr('name', 'equalto', 'lsblk_alias') | map(attribute='content') | join('') }}
+      when: use_alias_compat | bool

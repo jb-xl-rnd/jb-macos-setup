@@ -1,0 +1,29 @@
+{
+  "zsh_additions": [
+    {
+      "name": "pyenv_config",
+      "description": "Configure Python environment with pyenv",
+      "content": "export PYENV_ROOT=\"$HOME/.pyenv\"\nexport PATH=\"$PYENV_ROOT/bin:$PATH\"\neval \"$(pyenv init --path)\"\neval \"$(pyenv init -)\""
+    },
+    {
+      "name": "uv_config",
+      "description": "Configure UV as a PIP replacement",
+      "content": "# Setup UV as the preferred Python package installer\nexport UV_VIRTUALENV_ROOT=\"$HOME/.venvs\"\nalias pip=\"uv pip\"\nalias pipi=\"uv pip install\"\nalias venv=\"uv venv\"\n\n# Create a uvm function to create and manage virtualenvs more easily\nuvm() {\n  local cmd=\"$1\"\n  shift\n  case \"$cmd\" in\n    create)\n      local name=\"$1\"\n      uv venv \"$UV_VIRTUALENV_ROOT/$name\"\n      ;;\n    activate)\n      local name=\"$1\"\n      source \"$UV_VIRTUALENV_ROOT/$name/bin/activate\"\n      ;;\n    list)\n      ls -la \"$UV_VIRTUALENV_ROOT\"\n      ;;\n    *)\n      echo \"Usage: uvm [create|activate|list] [name]\"\n      ;;\n  esac\n}"
+    },
+    {
+      "name": "custom_prompt",
+      "description": "Custom prompt showing username, directory, and subdirectory",
+      "content": "set_prompt() {\n  USER_NAME=\"%F{red}$(whoami)%f\"\n  BASEDIR=${PWD##*/}\n  SUBDIR=${PWD%/*}\n  SUBDIR=${SUBDIR##*/}\n  PS1=\"$USER_NAME@%F{green}$SUBDIR/%F{blue}$BASEDIR %f\\$ \"\n}\nprecmd_functions+=(set_prompt)"
+    },
+    {
+      "name": "neofetch_alias",
+      "description": "Alias neofetch to macchina",
+      "content": "alias neofetch='echo \"neofetch is not installed, using macchina instead\"; macchina'"
+    },
+    {
+      "name": "lsblk_alias",
+      "description": "Alias lsblk to macOS diskutil list",
+      "content": "alias lsblk='echo \"lsblk is not available on macOS, using diskutil list instead\"; diskutil list'"
+    }
+  ]
+}
