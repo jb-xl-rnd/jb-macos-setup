@@ -79,6 +79,37 @@ You can customize these files to tailor the installation to your needs.
 - **Custom Shell Configuration**: Configuration of zsh with useful aliases and functions
 - **Linux Compatibility Aliases**: Aliases for Linux commands like `lsblk` that map to macOS equivalents
 
+## Detailed Feature Documentation
+
+### Developer Toolchain
+
+This setup installs a comprehensive developer environment with tools for:
+
+- **Text Editing**: neovim, Visual Studio Code, Sublime Text
+- **Version Control**: git with enhanced prompt
+- **Command Line**: iterm2, tmux, tree, jq, coreutils
+- **Languages**: Python, Node.js, Go, Deno
+- **Build Tools**: cmake, gcc
+- **Cloud**: awscli
+
+### Python Configuration
+
+The Python environment is carefully structured to avoid common pitfalls:
+
+1. **pyenv**: Manages Python versions to isolate from system Python
+2. **UV**: Modern, fast replacement for pip (up to 10-100x faster)
+3. **Isolated Environments**: All packages install in a dedicated virtual environment
+4. **Activation Script**: Auto-generated script to easily activate the environment
+
+### macOS-Specific Enhancements
+
+These scripts include macOS-specific improvements:
+
+- **Homebrew**: The missing package manager for macOS
+- **Default Apps**: Uses `dutis` to set file associations (unlike Linux's simpler approach)
+- **System Monitoring**: Tools like `asitop` for Apple Silicon metrics
+- **Window Management**: Rectangle for keyboard-based window positioning
+
 ## Operation Modes
 
 ### Bash Script (setupMacOs.sh)
@@ -89,6 +120,23 @@ The bash script approach offers:
 - **Configuration via JSON** files
 - Perfect for initial setup or single-machine use
 
+#### Installation Process Details
+
+When running the bash script:
+1. It first checks for jq (JSON parser) and installs it if missing
+2. It updates macOS built-in software using `softwareupdate`
+3. If using minimal mode, it only installs core packages defined in config.json
+4. Otherwise, it installs all packages from packages.json
+5. It configures your shell with customizations based on feature flags
+6. It creates isolated Python environments if UV is enabled
+
+#### Common Issues
+
+- **Permission errors**: May need to run with sudo for certain operations
+- **App Store sign-in**: Must be signed into App Store for mas to work
+- **Homebrew path**: May need to restart terminal after initial Homebrew setup
+- **Xcode**: Some packages require Xcode command line tools (`xcode-select --install`)
+
 ### Ansible Playbook (macos_setup.yml)
 
 The Ansible approach offers:
@@ -96,6 +144,22 @@ The Ansible approach offers:
 - **Declarative configuration** of the entire system
 - **Feature toggles** for enabling/disabling components
 - Better for managing multiple machines or team setups
+
+#### Ansible Requirements
+
+Unlike the bash script, Ansible has prerequisites:
+- Python must be installed first (the setupAnsible.sh script handles this)
+- Proper permissions for running Ansible tasks
+- Some familiarity with Ansible concepts (playbooks, tasks, etc.)
+
+#### Execution Details
+
+The Ansible playbook:
+1. Loads variables from all JSON config files
+2. Executes tasks based on enabled feature flags
+3. Skips tasks that have already been completed
+4. Provides detailed output of what changed
+5. Can be safely re-run multiple times
 
 ## Python Environment Management
 
@@ -139,6 +203,47 @@ To add a new shell function or alias:
 
 - macOS (tested on recent versions including Apple Silicon)
 - Administrative privileges
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Homebrew installation fails**
+   - Check your internet connection
+   - Try running the command manually: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
+   - Ensure you have the Xcode Command Line Tools: `xcode-select --install`
+
+2. **Mac App Store (mas) installations fail**
+   - Ensure you're signed into the App Store application
+   - Some apps may require manual installation if they're region-restricted
+   - Check if the App Store is experiencing issues
+
+3. **Python package installations fail**
+   - Make sure your UV installation is working: `uv --version`
+   - Check for permissions issues in the ~/.venvs directory
+   - Try running with sudo if needed for certain packages
+
+4. **Shell configurations not applied**
+   - Run `source ~/.zshrc` to apply changes immediately
+   - Restart your terminal application
+   - Check for syntax errors in the zsh configuration
+
+### Reset and Retry
+
+If you encounter persistent issues, you can try a fresh start:
+
+```bash
+# Remove Python virtual environments
+rm -rf ~/.venvs
+
+# Reset shell configurations (backup first!)
+cp ~/.zshrc ~/.zshrc.backup
+grep -v "ANSIBLE MANAGED BLOCK\|macchina\|neofetch\|lsblk\|UV_VIRTUALENV\|PYENV_ROOT\|precmd_functions" ~/.zshrc.backup > ~/.zshrc
+
+# Try installation again
+./scripts/setupInitialMacOS.sh
+./scripts/setupMacOs.sh
+```
 
 ## License
 
