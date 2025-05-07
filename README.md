@@ -75,7 +75,7 @@ You can customize these files to tailor the installation to your needs.
 - **Developer Tools**: Installation of common development tools (neovim, git, etc.)
 - **Applications**: Installation of essential applications (browsers, productivity tools, etc.)
 - **Python Environment**: Configuration of a Python development environment with pyenv
-- **UV Package Manager**: Support for the modern UV Python package manager
+- **UV Package Manager**: Support for the modern UV Python package manager with isolated virtual environments
 - **Custom Shell Configuration**: Configuration of zsh with useful aliases and functions
 - **Linux Compatibility Aliases**: Aliases for Linux commands like `lsblk` that map to macOS equivalents
 
@@ -96,6 +96,17 @@ The Ansible approach offers:
 - **Declarative configuration** of the entire system
 - **Feature toggles** for enabling/disabling components
 - Better for managing multiple machines or team setups
+
+## Python Environment Management
+
+This project uses UV, a modern Python package manager that's much faster than pip, to manage Python packages.
+Instead of installing packages globally, our setup uses isolated virtual environments:
+
+- All Python packages are installed in `~/.venvs/macos-setup`
+- An activation script is created at `~/activate-macos-setup.sh`
+- To use these packages, simply run: `source ~/activate-macos-setup.sh`
+
+This approach prevents conflicts and keeps your global Python environment clean.
 
 ## Customization
 

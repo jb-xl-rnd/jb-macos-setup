@@ -92,21 +92,46 @@ else
     
     # Install Python packages if not in minimal mode
     if [ "$(jq -r '.feature_flags.use_uv_package_manager' "$CONFIG_FILE")" = "true" ]; then
-        print_style "Installing Python packages with UV..." "info"
-        mkdir -p "$HOME/.venvs"  # Create the directory for virtual environments
+        print_style "Setting up Python virtual environment with UV..." "info"
+        # Create the directory for virtual environments
+        VENV_DIR="$HOME/.venvs/macos-setup"
+        mkdir -p "$HOME/.venvs"
         
+        # Create a dedicated virtual environment for these packages
+        if [ ! -d "$VENV_DIR" ]; then
+            print_style "Creating new virtual environment at $VENV_DIR..." "info"
+            uv venv "$VENV_DIR"
+        else
+            print_style "Using existing virtual environment at $VENV_DIR..." "info"
+        fi
+        
+        # Install packages into the virtual environment
+        print_style "Installing Python packages into virtual environment..." "info"
         PIP_PACKAGES=$(jq -r '.pip_packages[]' "$PACKAGES_FILE")
-        for pkg in $PIP_PACKAGES; do
-            print_style "Installing $pkg..." "info"
-            uv pip install "$pkg"
-        done
+        
+        # Create a requirements.txt file temporarily
+        TEMP_REQ=$(mktemp)
+        echo "$PIP_PACKAGES" > "$TEMP_REQ"
+        
+        # Install all packages at once into the virtual environment
+        uv pip install --no-deps -r "$TEMP_REQ" --python "$VENV_DIR/bin/python"
+        
+        # Clean up
+        rm "$TEMP_REQ"
+        
+        print_style "Python packages installed in isolated environment at $VENV_DIR" "success"
+        print_style "To use these packages, run: source $VENV_DIR/bin/activate" "info"
+        
+        # Create a handy activation script
+        ACTIVATE_SCRIPT="$HOME/activate-macos-setup.sh"
+        echo "#!/bin/bash" > "$ACTIVATE_SCRIPT"
+        echo "# Quick activation for MacOS setup Python environment" >> "$ACTIVATE_SCRIPT"
+        echo "source $VENV_DIR/bin/activate" >> "$ACTIVATE_SCRIPT"
+        chmod +x "$ACTIVATE_SCRIPT"
+        print_style "Created activation shortcut at $ACTIVATE_SCRIPT" "info"
     else
-        print_style "Installing Python packages with pip..." "info"
-        PIP_PACKAGES=$(jq -r '.pip_packages[]' "$PACKAGES_FILE")
-        for pkg in $PIP_PACKAGES; do
-            print_style "Installing $pkg..." "info"
-            pip3 install "$pkg"
-        done
+        print_style "Python packages installation skipped (UV not enabled)" "warning"
+        print_style "Enable UV in config.json to use isolated package installation" "info"
     fi
 fi
 

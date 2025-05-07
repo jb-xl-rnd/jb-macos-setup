@@ -62,7 +62,7 @@
       when: use_pyenv | bool
 
     # UV package manager setup if enabled
-    - name: Configure UV package manager
+    - name: Configure UV package manager in isolated virtualenv
       block:
         - name: Create UV virtualenv directory
           file:
@@ -70,23 +70,51 @@
             state: directory
             mode: '0755'
 
-        - name: Install Python packages with UV
+        - name: Create dedicated virtual environment
           shell: |
-            eval "$(pyenv init -)" 
-            uv pip install {{ item }}
+            eval "$(pyenv init -)"
+            VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
+            if [ ! -d "$VENV_DIR" ]; then
+              uv venv "$VENV_DIR"
+            fi
           args:
             executable: /bin/zsh
-          loop: "{{ pip_packages }}"
+
+        - name: Create temporary requirements file
+          tempfile:
+            state: file
+            suffix: requirements.txt
+          register: temp_requirements
+
+        - name: Populate requirements file
+          copy:
+            content: "{{ pip_packages | join('\n') }}"
+            dest: "{{ temp_requirements.path }}"
+          when: pip_packages | length > 0
+
+        - name: Install packages into virtual environment
+          shell: |
+            eval "$(pyenv init -)"
+            VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
+            uv pip install --no-deps -r {{ temp_requirements.path }} --python "$VENV_DIR/bin/python"
+          args:
+            executable: /bin/zsh
+          when: pip_packages | length > 0
+
+        - name: Create activation shortcut
+          copy:
+            dest: "{{ ansible_env.HOME }}/activate-macos-setup.sh"
+            content: |
+              #!/bin/bash
+              # Quick activation for MacOS setup Python environment
+              source {{ ansible_env.HOME }}/.venvs/macos-setup/bin/activate
+            mode: '0755'
       when: use_uv | bool
 
-    # Install Python packages with regular pip if UV is not enabled
-    - name: Install Python packages with pip
-      shell: |
-        eval "$(pyenv init -)"
-        pip install {{ item }}
-      args:
-        executable: /bin/zsh
-      loop: "{{ pip_packages }}"
+    # Skip Python package installation if UV is not enabled
+    - name: Notify about skipped Python package installation
+      debug:
+        msg: "Python package installation skipped. Enable UV in config for isolated package installation."
       when: not use_uv | bool
 
     # Configure zshrc with shell additions
