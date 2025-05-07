@@ -18,16 +18,25 @@
     - name: Run software update
       command: softwareupdate --install -a
       
+    - name: Process brew packages
+      set_fact:
+        brew_package_names: "{{ brew_packages | map(attribute='name') | list }}"
+      
     - name: Install Homebrew packages
       community.general.homebrew:
-        name: "{{ brew_packages }}"
+        name: "{{ item }}"
         state: present
+      loop: "{{ brew_package_names }}"
+      
+    - name: Process cask apps
+      set_fact:
+        cask_app_names: "{{ brew_cask_apps | map(attribute='name') | list }}"
 
     - name: Install Cask applications
       community.general.homebrew_cask:
         name: "{{ item }}"
         state: present
-      loop: "{{ brew_cask_apps }}"
+      loop: "{{ cask_app_names }}"
 
     - name: Install Mac App Store applications
       community.general.mas:
