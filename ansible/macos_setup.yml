@@ -18,31 +18,42 @@
     - name: Run software update
       command: softwareupdate --install -a
       
-    - name: Process brew packages
-      set_fact:
-        brew_package_names: "{{ brew_packages | map(attribute='name') | list }}"
+    - name: Debug - Display package format
+      debug:
+        var: brew_packages
+        verbosity: 1
       
-    - name: Install Homebrew packages
+    - name: Install Homebrew packages individually
       community.general.homebrew:
-        name: "{{ item }}"
+        name: "{{ item.name }}"
         state: present
-      loop: "{{ brew_package_names }}"
+      loop: "{{ brew_packages }}"
+      register: brew_result
+      ignore_errors: yes
       
-    - name: Process cask apps
-      set_fact:
-        cask_app_names: "{{ brew_cask_apps | map(attribute='name') | list }}"
+    - name: Debug failed homebrew installations
+      debug:
+        var: brew_result
+        verbosity: 1
+      
+    - name: Debug - Display cask app format
+      debug:
+        var: brew_cask_apps
+        verbosity: 1
 
     - name: Install Cask applications
       community.general.homebrew_cask:
-        name: "{{ item }}"
+        name: "{{ item.name }}"
         state: present
-      loop: "{{ cask_app_names }}"
+      loop: "{{ brew_cask_apps }}"
+      ignore_errors: yes
 
     - name: Install Mac App Store applications
       community.general.mas:
         id: "{{ item.id }}"
         state: present
       loop: "{{ mas_apps }}"
+      ignore_errors: yes
 
     # Python environment setup with pyenv if enabled
     - name: Configure Python with pyenv
