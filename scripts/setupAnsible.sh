@@ -1,11 +1,10 @@
 #!/bin/bash
 # setupAnsible.sh
 #
-# Description: Installs Ansible and its prerequisites
+# Description: Forces Ansible installation in the global environment
 # - Installs Homebrew if not present
 # - Installs Python if not present
-# - Installs pip if not present
-# - Installs Ansible via pip
+# - Forces Ansible installation with --ignore-installed flag
 # - Creates Ansible config directory
 
 # Install Homebrew if not installed
@@ -16,15 +15,8 @@ fi
 # Install Python if not present
 brew install python
 
-# Install pip if not present
-if ! command -v pip3 &> /dev/null; then
-    curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py
-    python3 get-pip.py
-    rm get-pip.py
-fi
-
-# Install Ansible
-pip3 install ansible
+# Force install Ansible with --ignore-installed to override any conflicts
+pip3 install --ignore-installed ansible
 
 # Create Ansible config directory
 mkdir -p ~/.ansible/roles
