@@ -1,10 +1,10 @@
 #!/bin/bash
 # setupAnsible.sh
 #
-# Description: Forces Ansible installation in the global environment
+# Description: Installs Ansible in a user environment to bypass external management restrictions
 # - Installs Homebrew if not present
 # - Installs Python if not present
-# - Forces Ansible installation with --ignore-installed flag
+# - Installs Ansible with --user flag to bypass externally managed environment
 # - Creates Ansible config directory
 
 # Install Homebrew if not installed
@@ -15,10 +15,17 @@ fi
 # Install Python if not present
 brew install python
 
-# Force install Ansible with --ignore-installed to override any conflicts
-pip3 install --ignore-installed ansible
+# Install Ansible with --user flag to bypass "externally managed environment" error
+pip3 install --user ansible
+
+# Add ~/.local/bin to PATH if not already there
+if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+    echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+    export PATH="$HOME/.local/bin:$PATH"
+fi
 
 # Create Ansible config directory
 mkdir -p ~/.ansible/roles
 
 echo "Ansible installation complete. You can now run the playbook."
+echo "Note: If you're opening a new terminal, you may need to source your .zshrc first."
