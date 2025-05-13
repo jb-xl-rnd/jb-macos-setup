@@ -23,17 +23,13 @@ show_menu() {
     print_style "===== MacOS Setup Menu =====" "info"
     print_style "1) Initial Setup (Homebrew, iTerm2, Shell)" "info"
     echo ""
-    print_style "BASH SETUP (no dependencies):" "warning"
-    print_style "2) Minimal Bash Setup - Core tools only" "info"
-    print_style "3) Full Bash Setup - All tools and configurations" "info"
-    echo ""
     print_style "ANSIBLE SETUP (comprehensive):" "warning"
-    print_style "4) Install Ansible" "info"
-    print_style "5) Run Ansible Playbook" "info"
+    print_style "2) Install Ansible" "info"
+    print_style "3) Run Ansible Playbook" "info"
     echo ""
     print_style "OTHER OPTIONS:" "warning"
-    print_style "6) Edit Configuration Files" "info"
-    print_style "7) View Documentation" "info"
+    print_style "4) Edit Configuration Files" "info"
+    print_style "5) View Documentation" "info"
     print_style "q) Quit" "info"
     echo ""
 }
@@ -46,18 +42,10 @@ execute_option() {
             ./scripts/setupInitialMacOS.sh
             ;;
         2)
-            print_style "Running Minimal Bash Setup..." "info"
-            ./scripts/setupMacOs.sh --minimal
-            ;;
-        3)
-            print_style "Running Full Bash Setup..." "info"
-            ./scripts/setupMacOs.sh
-            ;;
-        4)
             print_style "Installing Ansible..." "info"
             ./scripts/setupAnsible.sh
             ;;
-        5)
+        3)
             print_style "Running Ansible Playbook..." "info"
             if ! command -v ansible-playbook &> /dev/null; then
                 print_style "Ansible not found. Installing first..." "warning"
@@ -65,7 +53,7 @@ execute_option() {
             fi
             ansible-playbook ./ansible/macos_setup.yml
             ;;
-        6)
+        4)
             print_style "Edit Configuration Files:" "info"
             echo "1) Edit Package List (packages.json)"
             echo "2) Edit Shell Configurations (shell_config.json)"
@@ -90,7 +78,7 @@ execute_option() {
                     ;;
             esac
             ;;
-        7)
+        5)
             print_style "Documentation:" "info"
             echo "1) Main README"
             echo "2) NTFS Support Instructions"

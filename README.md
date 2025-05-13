@@ -33,21 +33,7 @@ Or you can run individual scripts:
    ./scripts/setupInitialMacOS.sh
    ```
 
-2. **Choose Your Setup Method:**
-
-   ### Option A: Minimal Bash Setup (Faster, No Dependencies)
-   
-   For a lightweight setup with just the essential tools:
-   ```bash
-   ./scripts/setupMacOs.sh --minimal
-   ```
-   
-   For the full bash-based setup:
-   ```bash
-   ./scripts/setupMacOs.sh
-   ```
-
-   ### Option B: Comprehensive Ansible Setup (Complete, Idempotent)
+2. **Setup with Ansible (Comprehensive, Idempotent):**
    
    First install Ansible:
    ```bash
@@ -111,31 +97,6 @@ These scripts include macOS-specific improvements:
 - **Window Management**: Rectangle for keyboard-based window positioning
 
 ## Operation Modes
-
-### Bash Script (setupMacOs.sh)
-
-The bash script approach offers:
-- **No dependencies** (except Homebrew)
-- **Minimal mode** option for essential tools only
-- **Configuration via JSON** files
-- Perfect for initial setup or single-machine use
-
-#### Installation Process Details
-
-When running the bash script:
-1. It first checks for jq (JSON parser) and installs it if missing
-2. It updates macOS built-in software using `softwareupdate`
-3. If using minimal mode, it only installs core packages defined in config.json
-4. Otherwise, it installs all packages from packages.json
-5. It configures your shell with customizations based on feature flags
-6. It creates isolated Python environments if UV is enabled
-
-#### Common Issues
-
-- **Permission errors**: May need to run with sudo for certain operations
-- **App Store sign-in**: Must be signed into App Store for mas to work
-- **Homebrew path**: May need to restart terminal after initial Homebrew setup
-- **Xcode**: Some packages require Xcode command line tools (`xcode-select --install`)
 
 ### Ansible Playbook (macos_setup.yml)
 
