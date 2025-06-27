@@ -54,6 +54,8 @@
     "use_pyenv": true,
     "custom_shell_prompt": true,
     "alias_compatibility": true,
-    "use_uv_package_manager": true
+    "use_uv_package_manager": true,
+    "install_dutis": true,
+    "dutis_auto_configure": true
   }
 }

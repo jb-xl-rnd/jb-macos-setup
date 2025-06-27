@@ -18,7 +18,6 @@
     {"name": "macchina", "description": "System information viewer"},
     {"name": "gnuplot", "description": "Plotting tool"},
     {"name": "imagemagick", "description": "Image manipulation"},
-    {"name": "dutis", "description": "Default app setter"},
     {"name": "python", "description": "Python language"},
     {"name": "uv", "description": "Faster Python package manager"},
     {"name": "git", "description": "Version control"},
@@ -37,7 +36,17 @@
     {"name": "asitop", "description": "Apple Silicon monitor"},
     {"name": "zstd", "description": "Fast compression tool"},
     {"name": "xz", "description": "Compression utility"},
-    {"name": "duti", "description": "Set default document handlers"}
+    {"name": "duti", "description": "Set default document handlers"},
+    {"name": "curl", "description": "Command line HTTP client"},
+    {"name": "fzf", "description": "Fuzzy finder"},
+    {"name": "ripgrep", "description": "Fast text search tool"},
+    {"name": "fd", "description": "Fast find alternative"},
+    {"name": "lazygit", "description": "Git terminal UI"},
+    {"name": "luarocks", "description": "Lua package manager for Neovim plugins"},
+    {"name": "lua", "description": "Lua programming language"},
+    {"name": "tree-sitter", "description": "Parser generator for syntax highlighting"},
+    {"name": "stylua", "description": "Lua code formatter"},
+    {"name": "shfmt", "description": "Shell script formatter"}
   ],
   "brew_cask_apps": [
     {"name": "brave-browser", "description": "Privacy-focused web browser"},
@@ -62,12 +71,16 @@
     {"name": "qgroundcontrol", "description": "Drone ground control"},
     {"name": "rectangle", "description": "Window manager"},
     {"name": "iterm2", "description": "Terminal emulator"},
+    {"name": "kitty", "description": "Fast GPU-accelerated terminal emulator"},
     {"name": "raycast", "description": "Launcher/productivity tool"},
     {"name": "obsidian", "description": "Note-taking app"},
     {"name": "webex", "description": "Video conferencing"},
     {"name": "macfuse", "description": "Filesystem extension"},
     {"name": "orbstack", "description": "Docker/Linux VM alternative"},
-    {"name": "teamspeak-client", "description": "Voice communication"}
+    {"name": "teamspeak-client", "description": "Voice communication"},
+    {"name": "font-hack-nerd-font", "description": "Nerd Font for terminal/editor icons"},
+    {"name": "font-fira-code-nerd-font", "description": "Nerd Font with ligatures"},
+    {"name": "font-jetbrains-mono-nerd-font", "description": "JetBrains Mono Nerd Font"}
   ],
   "mas_apps": [
     {

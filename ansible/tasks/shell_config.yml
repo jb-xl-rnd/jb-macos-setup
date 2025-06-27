@@ -1,0 +1,37 @@
+---
+# Ansible task file for shell configuration
+
+# Configure zshrc with shell additions
+- name: Configure zshrc with pyenv
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Pyenv Configuration"
+    block: "{{ zsh_additions | selectattr('name', 'equalto', 'pyenv_config') | map(attribute='content') | join('') }}"
+  when: use_pyenv | bool
+
+- name: Configure zshrc with UV
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - UV Configuration"
+    block: "{{ zsh_additions | selectattr('name', 'equalto', 'uv_config') | map(attribute='content') | join('') }}"
+  when: use_uv | bool
+
+- name: Configure zshrc with custom prompt
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Custom Prompt"
+    block: "{{ zsh_additions | selectattr('name', 'equalto', 'custom_prompt') | map(attribute='content') | join('') }}"
+  when: use_custom_prompt | bool
+
+- name: Configure zshrc with compatibility aliases
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Compatibility Aliases"
+    block: |
+      {{ zsh_additions | selectattr('name', 'equalto', 'neofetch_alias') | map(attribute='content') | join('') }}
+      {{ zsh_additions | selectattr('name', 'equalto', 'lsblk_alias') | map(attribute='content') | join('') }}
+  when: use_alias_compat | bool

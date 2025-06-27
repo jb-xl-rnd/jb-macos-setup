@@ -13,161 +13,58 @@
     use_pyenv: "{{ feature_flags.use_pyenv | default(false) }}"
     use_custom_prompt: "{{ feature_flags.custom_shell_prompt | default(false) }}"
     use_alias_compat: "{{ feature_flags.alias_compatibility | default(false) }}"
+    install_dutis: "{{ feature_flags.install_dutis | default(true) }}"
+    dutis_auto_configure: "{{ feature_flags.dutis_auto_configure | default(true) }}"
 
+  pre_tasks:
+    - name: Install required Ansible collections
+      ansible.builtin.command:
+        cmd: ansible-galaxy collection install community.general
+      delegate_to: localhost
+      run_once: true
+      
+    - name: Display important setup notice
+      debug:
+        msg: |
+          ==========================================================
+          IMPORTANT SETUP NOTICE
+          ==========================================================
+          
+          This playbook will install and configure various tools for
+          your macOS system. Some operations may require sudo access.
+          
+          We've designed the setup to use user-level permissions
+          whenever possible, but some operations might still require
+          administrative privileges.
+          
+          Note that dutis will be installed to ~/.local/bin to avoid
+          sudo requirements. For automatic file association setup,
+          you may need to run the script manually later.
+          ==========================================================
+        verbosity: 1
+  
   tasks:
-    - name: Run software update
-      command: softwareupdate --install -a
+    # Include package installation tasks
+    - name: Install Homebrew packages and applications
+      include_tasks: tasks/packages.yml
+      tags: [packages, brew, apps]
       
-    - name: Debug - Display package format
-      debug:
-        var: brew_packages
-        verbosity: 1
+    # Include Python environment setup
+    - name: Configure Python environment
+      include_tasks: tasks/python_env.yml
+      tags: [python, pyenv, uv]
       
-    - name: Install Homebrew packages individually
-      community.general.homebrew:
-        name: "{{ item.name }}"
-        state: present
-      loop: "{{ brew_packages }}"
-      register: brew_result
-      ignore_errors: yes
+    # Include shell configuration
+    - name: Configure shell environment
+      include_tasks: tasks/shell_config.yml
+      tags: [shell, zsh]
       
-    - name: Debug failed homebrew installations
-      debug:
-        var: brew_result
-        verbosity: 1
+    # Include dutis installation and configuration
+    - name: Install and configure dutis
+      include_tasks: tasks/dutis.yml
+      tags: [dutis, defaults]
       
-    - name: Debug - Display cask app format
-      debug:
-        var: brew_cask_apps
-        verbosity: 1
-
-    - name: Install Cask applications
-      community.general.homebrew_cask:
-        name: "{{ item.name }}"
-        state: present
-      loop: "{{ brew_cask_apps }}"
-      ignore_errors: yes
-
-    - name: Install Mac App Store applications
-      community.general.mas:
-        id: "{{ item.id }}"
-        state: present
-      loop: "{{ mas_apps }}"
-      ignore_errors: yes
-
-    # Python environment setup with pyenv if enabled
-    - name: Configure Python with pyenv
-      block:
-        - name: Ensure .pyenv directory exists
-          file:
-            path: "{{ ansible_env.HOME }}/.pyenv"
-            state: directory
-            mode: '0755'
-
-        - name: Install Python with pyenv
-          shell: |
-            eval "$(pyenv init -)"
-            pyenv install {{ python_version }} -s
-            pyenv global {{ python_version }}
-          args:
-            executable: /bin/zsh
-            creates: "{{ ansible_env.HOME }}/.pyenv/versions/{{ python_version }}"
-
-        - name: Upgrade pip
-          shell: |
-            eval "$(pyenv init -)"
-            pip install --upgrade pip
-          args:
-            executable: /bin/zsh
-      when: use_pyenv | bool
-
-    # UV package manager setup if enabled
-    - name: Configure UV package manager in isolated virtualenv
-      block:
-        - name: Create UV virtualenv directory
-          file:
-            path: "{{ ansible_env.HOME }}/.venvs"
-            state: directory
-            mode: '0755'
-
-        - name: Create dedicated virtual environment
-          shell: |
-            eval "$(pyenv init -)"
-            VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
-            if [ ! -d "$VENV_DIR" ]; then
-              uv venv "$VENV_DIR"
-            fi
-          args:
-            executable: /bin/zsh
-
-        - name: Create temporary requirements file
-          tempfile:
-            state: file
-            suffix: requirements.txt
-          register: temp_requirements
-
-        - name: Populate requirements file
-          copy:
-            content: "{{ pip_packages | join('\n') }}"
-            dest: "{{ temp_requirements.path }}"
-          when: pip_packages | length > 0
-
-        - name: Install packages into virtual environment
-          shell: |
-            eval "$(pyenv init -)"
-            VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
-            uv pip install --no-deps -r {{ temp_requirements.path }} --python "$VENV_DIR/bin/python"
-          args:
-            executable: /bin/zsh
-          when: pip_packages | length > 0
-
-        - name: Create activation shortcut
-          copy:
-            dest: "{{ ansible_env.HOME }}/activate-macos-setup.sh"
-            content: |
-              #!/bin/bash
-              # Quick activation for MacOS setup Python environment
-              source {{ ansible_env.HOME }}/.venvs/macos-setup/bin/activate
-            mode: '0755'
-      when: use_uv | bool
-
-    # Skip Python package installation if UV is not enabled
-    - name: Notify about skipped Python package installation
-      debug:
-        msg: "Python package installation skipped. Enable UV in config for isolated package installation."
-      when: not use_uv | bool
-
-    # Configure zshrc with shell additions
-    - name: Configure zshrc with pyenv
-      blockinfile:
-        path: ~/.zshrc
-        create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - Pyenv Configuration"
-        block: "{{ zsh_additions | selectattr('name', 'equalto', 'pyenv_config') | map(attribute='content') | join('') }}"
-      when: use_pyenv | bool
-
-    - name: Configure zshrc with UV
-      blockinfile:
-        path: ~/.zshrc
-        create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - UV Configuration"
-        block: "{{ zsh_additions | selectattr('name', 'equalto', 'uv_config') | map(attribute='content') | join('') }}"
-      when: use_uv | bool
-
-    - name: Configure zshrc with custom prompt
-      blockinfile:
-        path: ~/.zshrc
-        create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - Custom Prompt"
-        block: "{{ zsh_additions | selectattr('name', 'equalto', 'custom_prompt') | map(attribute='content') | join('') }}"
-      when: use_custom_prompt | bool
-
-    - name: Configure zshrc with compatibility aliases
-      blockinfile:
-        path: ~/.zshrc
-        create: yes
-        marker: "# {mark} ANSIBLE MANAGED BLOCK - Compatibility Aliases"
-        block: |
-          {{ zsh_additions | selectattr('name', 'equalto', 'neofetch_alias') | map(attribute='content') | join('') }}
-          {{ zsh_additions | selectattr('name', 'equalto', 'lsblk_alias') | map(attribute='content') | join('') }}
-      when: use_alias_compat | bool
+    # Include LazyVim installation
+    - name: Setup LazyVim
+      include_tasks: tasks/lazyvim.yml
+      tags: [lazyvim, neovim, editor]

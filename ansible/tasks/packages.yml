@@ -1,0 +1,55 @@
+---
+# Ansible task file for package installation
+
+- name: Check if software update should run
+  debug:
+    msg: "Checking for software updates..."
+    verbosity: 1
+
+- name: Run software update (skipped for faster setup)
+  command: softwareupdate --list
+  register: update_result
+  changed_when: false
+  ignore_errors: yes
+  
+- name: Display available updates
+  debug:
+    var: update_result.stdout_lines
+    verbosity: 1
+  
+- name: Debug - Display package format
+  debug:
+    var: brew_packages
+    verbosity: 1
+  
+- name: Install Homebrew packages individually
+  community.general.homebrew:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ brew_packages }}"
+  register: brew_result
+  ignore_errors: yes
+  
+- name: Debug failed homebrew installations
+  debug:
+    var: brew_result
+    verbosity: 1
+  
+- name: Debug - Display cask app format
+  debug:
+    var: brew_cask_apps
+    verbosity: 1
+
+- name: Install Cask applications
+  community.general.homebrew_cask:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ brew_cask_apps }}"
+  ignore_errors: yes
+
+- name: Install Mac App Store applications
+  community.general.mas:
+    id: "{{ item.id }}"
+    state: present
+  loop: "{{ mas_apps }}"
+  ignore_errors: yes

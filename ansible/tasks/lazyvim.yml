@@ -1,0 +1,85 @@
+---
+- name: Setup LazyVim
+  block:
+    - name: Ensure luarocks is available
+      command: which luarocks
+      register: luarocks_check
+      ignore_errors: yes
+      
+    - name: Fail if luarocks is not installed
+      fail:
+        msg: "luarocks is required for LazyVim but not found. Please install it via Homebrew first."
+      when: luarocks_check.rc != 0
+    - name: Check if Neovim config directory exists
+      stat:
+        path: "{{ ansible_env.HOME }}/.config/nvim"
+      register: nvim_config_exists
+
+    - name: Backup existing Neovim configuration
+      when: nvim_config_exists.stat.exists
+      block:
+        - name: Backup nvim config directory
+          command: mv "{{ ansible_env.HOME }}/.config/nvim" "{{ ansible_env.HOME }}/.config/nvim.bak"
+          
+        - name: Backup nvim local share directory
+          stat:
+            path: "{{ ansible_env.HOME }}/.local/share/nvim"
+          register: nvim_share_exists
+          
+        - name: Move nvim share backup
+          command: mv "{{ ansible_env.HOME }}/.local/share/nvim" "{{ ansible_env.HOME }}/.local/share/nvim.bak"
+          when: nvim_share_exists.stat.exists
+          
+        - name: Backup nvim local state directory
+          stat:
+            path: "{{ ansible_env.HOME }}/.local/state/nvim"
+          register: nvim_state_exists
+          
+        - name: Move nvim state backup
+          command: mv "{{ ansible_env.HOME }}/.local/state/nvim" "{{ ansible_env.HOME }}/.local/state/nvim.bak"
+          when: nvim_state_exists.stat.exists
+          
+        - name: Backup nvim cache directory
+          stat:
+            path: "{{ ansible_env.HOME }}/.cache/nvim"
+          register: nvim_cache_exists
+          
+        - name: Move nvim cache backup
+          command: mv "{{ ansible_env.HOME }}/.cache/nvim" "{{ ansible_env.HOME }}/.cache/nvim.bak"
+          when: nvim_cache_exists.stat.exists
+
+    - name: Clone LazyVim starter repository
+      git:
+        repo: https://github.com/LazyVim/starter
+        dest: "{{ ansible_env.HOME }}/.config/nvim"
+        force: yes
+
+    - name: Remove .git directory from LazyVim config
+      file:
+        path: "{{ ansible_env.HOME }}/.config/nvim/.git"
+        state: absent
+
+    - name: Install common luarocks packages for LazyVim
+      command: "luarocks install {{ item }}"
+      loop:
+        - luafilesystem
+        - lpeg
+      ignore_errors: yes
+
+    - name: Display LazyVim installation success message
+      debug:
+        msg: |
+          LazyVim has been installed successfully!
+          
+          Dependencies installed:
+          - Neovim (via Homebrew)
+          - Luarocks and common Lua packages
+          - Nerd Fonts for icons
+          
+          Next steps:
+          1. Run 'nvim' to start Neovim with LazyVim
+          2. LazyVim will automatically install plugins on first run
+          3. Run ':LazyHealth' in Neovim to verify everything is working
+          4. Check the LazyVim documentation at https://www.lazyvim.org/
+          
+          If you see missing icons, ensure your terminal uses a Nerd Font.

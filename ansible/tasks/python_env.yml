@@ -1,0 +1,84 @@
+---
+# Ansible task file for Python environment setup
+
+# Python environment setup with pyenv if enabled
+- name: Configure Python with pyenv
+  block:
+    - name: Ensure .pyenv directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.pyenv"
+        state: directory
+        mode: '0755'
+
+    - name: Install Python with pyenv
+      shell: |
+        eval "$(pyenv init -)"
+        pyenv install {{ python_version }} -s
+        pyenv global {{ python_version }}
+      args:
+        executable: /bin/zsh
+        creates: "{{ ansible_env.HOME }}/.pyenv/versions/{{ python_version }}"
+
+    - name: Upgrade pip
+      shell: |
+        eval "$(pyenv init -)"
+        pip install --upgrade pip
+      args:
+        executable: /bin/zsh
+  when: use_pyenv | bool
+
+# UV package manager setup if enabled
+- name: Configure UV package manager in isolated virtualenv
+  block:
+    - name: Create UV virtualenv directory
+      file:
+        path: "{{ ansible_env.HOME }}/.venvs"
+        state: directory
+        mode: '0755'
+
+    - name: Create dedicated virtual environment
+      shell: |
+        eval "$(pyenv init -)"
+        VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
+        if [ ! -d "$VENV_DIR" ]; then
+          uv venv "$VENV_DIR"
+        fi
+      args:
+        executable: /bin/zsh
+
+    - name: Create temporary requirements file
+      tempfile:
+        state: file
+        suffix: requirements.txt
+      register: temp_requirements
+
+    - name: Populate requirements file
+      copy:
+        content: "{{ pip_packages | join('\n') }}"
+        dest: "{{ temp_requirements.path }}"
+      when: pip_packages | length > 0
+
+    - name: Install packages into virtual environment
+      shell: |
+        eval "$(pyenv init -)"
+        VENV_DIR="{{ ansible_env.HOME }}/.venvs/macos-setup"
+        uv pip install --no-deps -r {{ temp_requirements.path }} --python "$VENV_DIR/bin/python"
+      args:
+        executable: /bin/zsh
+      when: pip_packages | length > 0
+
+    - name: Create activation shortcut
+      copy:
+        dest: "{{ ansible_env.HOME }}/activate-macos-setup.sh"
+        content: |
+          #!/bin/bash
+          # Quick activation for MacOS setup Python environment
+          source {{ ansible_env.HOME }}/.venvs/macos-setup/bin/activate
+        mode: '0755'
+  when: use_uv | bool
+
+# Skip Python package installation if UV is not enabled
+- name: Notify about skipped Python package installation
+  debug:
+    msg: "Python package installation skipped. Enable UV in config for isolated package installation."
+  when: not use_uv | bool

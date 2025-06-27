@@ -1,0 +1,257 @@
+---
+# Ansible task file for dutis installation and configuration
+
+# Install dutis (Default UTI Setter) for managing default applications
+- name: Check if dutis is already installed
+  shell: |
+    if [ -x "$HOME/.local/bin/dutis" ] || command -v dutis &>/dev/null; then
+      exit 0
+    else
+      exit 1
+    fi
+  register: dutis_check
+  changed_when: false
+  failed_when: false
+  
+- name: Install Rust (required for dutis)
+  shell: |
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+    source "$HOME/.cargo/env"
+  args:
+    executable: /bin/bash
+    creates: "{{ ansible_env.HOME }}/.cargo/bin/cargo"
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+- name: Create temporary directory for dutis installation
+  tempfile:
+    state: directory
+    suffix: dutis
+  register: dutis_tempdir
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+- name: Clone dutis repository
+  git:
+    repo: https://github.com/tsonglew/dutis.git
+    dest: "{{ dutis_tempdir.path }}/dutis"
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+- name: Build dutis
+  shell: |
+    source "$HOME/.cargo/env"
+    cd "{{ dutis_tempdir.path }}/dutis" && cargo build --release
+  args:
+    executable: /bin/bash
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+# Create user-local bin directory first
+- name: Create ~/.local/bin directory if it doesn't exist
+  file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+    mode: '0755'
+  when: install_dutis | bool and dutis_check.rc != 0
+
+- name: Install dutis binary to local bin 
+  copy:
+    src: "{{ dutis_tempdir.path }}/dutis/target/release/dutis"
+    dest: "{{ ansible_env.HOME }}/.local/bin/dutis"
+    mode: '0755'
+    remote_src: yes
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+- name: Add ~/.local/bin to PATH in .zshrc
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Local bin path"
+    block: |
+      # Add ~/.local/bin to PATH if it doesn't exist
+      if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
+        export PATH="$HOME/.local/bin:$PATH"
+      fi
+  when: install_dutis | bool and dutis_check.rc != 0
+  
+- name: Clean up temporary directory
+  file:
+    path: "{{ dutis_tempdir.path }}"
+    state: absent
+  when: install_dutis | bool and dutis_check.rc != 0 and dutis_tempdir.path is defined
+
+# Ensure dutis config directory exists
+- name: Create dutis config directory
+  file:
+    path: "{{ ansible_env.HOME }}/.config/dutis"
+    state: directory
+    mode: '0755'
+  when: install_dutis | bool and dutis_auto_configure | bool
+
+# Create custom groups configuration for dutis
+- name: Create dutis groups configuration
+  copy:
+    dest: "{{ ansible_env.HOME }}/.config/dutis/groups.yaml"
+    content: |
+      video:
+        - mp4
+        - mov
+        - mkv
+        - avi
+        - webm
+      audio:
+        - mp3
+        - flac
+        - wav
+        - ogg
+        - m4a
+      image:
+        - jpg
+        - jpeg
+        - png
+        - gif
+        - webp
+        - tiff
+      code:
+        - py
+        - js
+        - html
+        - css
+        - sh
+        - ts
+        - json
+        - yaml
+        - yml
+        - md
+      archive:
+        - zip
+        - tar
+        - gz
+        - 7z
+        - rar
+    mode: '0644'
+  when: install_dutis | bool and dutis_auto_configure | bool
+
+# Create a script file for setting default applications
+- name: Create script for setting default applications
+  copy:
+    dest: "{{ ansible_env.HOME }}/.local/bin/set_default_apps.sh"
+    mode: '0755'
+    content: |
+      #!/bin/bash
+      
+      # Color output
+      print_style() {
+          if [ "$2" == "info" ] ; then
+              COLOR="96m"
+          elif [ "$2" == "success" ] ; then
+              COLOR="92m"
+          elif [ "$2" == "warning" ] ; then
+              COLOR="93m"
+          elif [ "$2" == "error" ] ; then
+              COLOR="91m"
+          else
+              COLOR="0m"
+          fi
+          echo -e "\033[${COLOR}$1\033[0m"
+      }
+      
+      print_style "Setting up default applications with dutis..." "info"
+      
+      # Exit if dutis is not installed
+      if ! [ -x "$HOME/.local/bin/dutis" ]; then
+          print_style "Error: dutis not found in ~/.local/bin" "error"
+          print_style "Please run the installation script first" "error"
+          exit 1
+      fi
+      
+      set_default_app() {
+        local extension=$1
+        local app_bundle=$2
+        # Check if app exists
+        if [ -d "/Applications/$app_bundle.app" ] || [ -d "$HOME/Applications/$app_bundle.app" ]; then
+          print_style "Setting $app_bundle as default for .$extension" "info"
+          # Use the --write option instead of piping to avoid interaction
+          "$HOME/.local/bin/dutis" "$extension" --write "$app_bundle"
+        else
+          print_style "Application $app_bundle not found, skipping .$extension" "warning"
+        fi
+      }
+      
+      # Set up by file type groups
+      print_style "Setting up default applications by groups..." "info"
+      
+      # Check if apps exist before setting defaults
+      if [ -d "/Applications/Visual Studio Code.app" ] || [ -d "$HOME/Applications/Visual Studio Code.app" ]; then
+        print_style "Setting Visual Studio Code as default for code files" "info"
+        "$HOME/.local/bin/dutis" --group code --write "Visual Studio Code"
+      else
+        print_style "Visual Studio Code not found, will set defaults individually" "warning"
+        set_default_app "md" "Visual Studio Code"
+        set_default_app "json" "Visual Studio Code"
+        set_default_app "py" "Visual Studio Code"
+        set_default_app "js" "Visual Studio Code"
+        set_default_app "html" "Visual Studio Code"
+        set_default_app "css" "Visual Studio Code"
+        set_default_app "sh" "Visual Studio Code"
+        set_default_app "txt" "Visual Studio Code"
+      fi
+      
+      if [ -d "/Applications/VLC.app" ] || [ -d "$HOME/Applications/VLC.app" ]; then
+        print_style "Setting VLC as default for media files" "info"
+        "$HOME/.local/bin/dutis" --group video --write "VLC"
+        "$HOME/.local/bin/dutis" --group audio --write "VLC"
+      else
+        print_style "VLC not found, skipping media file associations" "warning"
+      fi
+      
+      if [ -d "/Applications/The Unarchiver.app" ] || [ -d "$HOME/Applications/The Unarchiver.app" ]; then
+        print_style "Setting The Unarchiver as default for archive files" "info"
+        "$HOME/.local/bin/dutis" --group archive --write "The Unarchiver"
+      else
+        print_style "The Unarchiver not found, skipping archive file associations" "warning"
+      fi
+      
+      # Preview is a system app that should always be present
+      print_style "Setting Preview as default for images and PDFs" "info"
+      "$HOME/.local/bin/dutis" --group image --write "Preview"
+      "$HOME/.local/bin/dutis" "pdf" --write "Preview"
+      
+      print_style "Default applications setup complete!" "success"
+  when: install_dutis | bool and dutis_auto_configure | bool
+
+# Automatically try to run the script if possible
+- name: Try to run default application setup script
+  shell: |
+    if [ -x "$HOME/.local/bin/dutis" ]; then
+      # Run with a timeout to prevent hanging
+      timeout 30s "$HOME/.local/bin/set_default_apps.sh" || echo "Script execution timed out or failed, but continuing"
+    else
+      echo "Dutis not installed yet, skipping automatic configuration"
+    fi
+  args:
+    executable: /bin/bash
+  register: dutis_config_result
+  ignore_errors: yes
+  when: install_dutis | bool and dutis_auto_configure | bool
+  
+- name: Display notification about manual script execution
+  debug:
+    msg: |
+      ==========================================================
+      Default Applications Setup
+      ==========================================================
+      
+      A script has been created at:
+      ~/.local/bin/set_default_apps.sh
+      
+      You can run this script manually after installation to
+      configure default applications for common file types.
+      
+      Example usage:
+      ~/.local/bin/set_default_apps.sh
+      ==========================================================
+  when: install_dutis | bool and dutis_auto_configure | bool
+  
+- name: Display dutis configuration results
+  debug:
+    var: dutis_config_result
+    verbosity: 1
+  when: install_dutis | bool and dutis_auto_configure | bool
