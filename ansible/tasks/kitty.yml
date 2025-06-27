@@ -1,0 +1,24 @@
+---
+# Ansible task file for Kitty terminal configuration
+
+- name: Ensure Kitty config directory exists
+  file:
+    path: "{{ ansible_env.HOME }}/.config/kitty"
+    state: directory
+    mode: '0755'
+
+- name: Configure Kitty font settings to match iTerm2
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.config/kitty/kitty.conf"
+    regexp: "^#?\\s*{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.value }}"
+    create: yes
+    backup: yes
+  loop:
+    - { key: "font_family", value: "Menlo Regular" }
+    - { key: "font_size", value: "12.0" }
+  notify: restart kitty
+
+- name: Display Kitty configuration status
+  debug:
+    msg: "Kitty has been configured with Menlo Regular 12pt font to match iTerm2"

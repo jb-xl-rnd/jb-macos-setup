@@ -68,3 +68,8 @@
     - name: Setup LazyVim
       include_tasks: tasks/lazyvim.yml
       tags: [lazyvim, neovim, editor]
+      
+    # Include Kitty terminal configuration
+    - name: Configure Kitty terminal
+      include_tasks: tasks/kitty.yml
+      tags: [kitty, terminal]
