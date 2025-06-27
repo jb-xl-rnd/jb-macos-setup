@@ -59,6 +59,50 @@
         path: "{{ ansible_env.HOME }}/.config/nvim/.git"
         state: absent
 
+    - name: Create telescope configuration for hidden files
+      file:
+        path: "{{ ansible_env.HOME }}/.config/nvim/lua/plugins"
+        state: directory
+
+    - name: Configure telescope for enhanced content search
+      copy:
+        dest: "{{ ansible_env.HOME }}/.config/nvim/lua/plugins/telescope.lua"
+        content: |
+          return {
+            "nvim-telescope/telescope.nvim",
+            keys = {
+              { "<leader>fg", function() require("telescope.builtin").live_grep() end, desc = "Grep Files" },
+              { "<leader>fw", function() require("telescope.builtin").grep_string() end, desc = "Grep Word" },
+            },
+            opts = {
+              defaults = {
+                file_ignore_patterns = { "^%.git/", "node_modules/", "%.lock$" },
+                vimgrep_arguments = {
+                  "rg",
+                  "--color=never",
+                  "--no-heading",
+                  "--with-filename",
+                  "--line-number",
+                  "--column",
+                  "--smart-case",
+                  "--trim",
+                },
+              },
+              pickers = {
+                live_grep = {
+                  additional_args = function()
+                    return { "--no-ignore-vcs" }
+                  end,
+                },
+                grep_string = {
+                  additional_args = function()
+                    return { "--no-ignore-vcs" }
+                  end,
+                },
+              },
+            },
+          }
+
     - name: Install common luarocks packages for LazyVim
       command: "luarocks install {{ item }}"
       loop:
