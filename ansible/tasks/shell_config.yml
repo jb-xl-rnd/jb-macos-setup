@@ -35,3 +35,11 @@
       {{ zsh_additions | selectattr('name', 'equalto', 'neofetch_alias') | map(attribute='content') | join('') }}
       {{ zsh_additions | selectattr('name', 'equalto', 'lsblk_alias') | map(attribute='content') | join('') }}
   when: use_alias_compat | bool
+
+- name: Configure zshrc with Kitty pane information
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Kitty Pane Info"
+    block: "{{ zsh_additions | selectattr('name', 'equalto', 'kitty_pane_info') | map(attribute='content') | join('') }}"
+  when: use_kitty_pane_info | bool

@@ -24,6 +24,11 @@
       "name": "lsblk_alias",
       "description": "Alias lsblk to macOS diskutil list",
       "content": "alias lsblk='echo \"lsblk is not available on macOS, using diskutil list instead\"; diskutil list'"
+    },
+    {
+      "name": "kitty_pane_info",
+      "description": "Show pane info and uptime in Kitty terminal splits",
+      "content": "# Kitty pane identification and uptime display\nif [[ \"$TERM\" == \"xterm-kitty\" ]]; then\n  # Function to get current window/pane info\n  get_kitty_pane_info() {\n    local window_id=\"${KITTY_WINDOW_ID:-unknown}\"\n    local pane_num=\"${KITTY_LISTEN_ON##*/}\"\n    local uptime_info=$(uptime | sed 's/.*up //' | sed 's/,.*//')\n    echo \"[Pane: ${pane_num: -1} | Up: $uptime_info]\"\n  }\n  \n  # Enhanced prompt for Kitty with pane info\n  kitty_set_prompt() {\n    local pane_info=\"%F{yellow}$(get_kitty_pane_info)%f\"\n    USER_NAME=\"%F{red}$(whoami)%f\"\n    BASEDIR=${PWD##*/}\n    SUBDIR=${PWD%/*}\n    SUBDIR=${SUBDIR##*/}\n    PS1=\"$pane_info\\n$USER_NAME@%F{green}$SUBDIR/%F{blue}$BASEDIR %f\\$ \"\n  }\n  \n  # Show pane info on terminal start\n  echo \"\\n$(get_kitty_pane_info)\"\n  echo \"Terminal started at $(date '+%H:%M:%S')\"\n  \n  # Override the default prompt function for Kitty\n  precmd_functions=(kitty_set_prompt)\nfi"
     }
   ]
 }

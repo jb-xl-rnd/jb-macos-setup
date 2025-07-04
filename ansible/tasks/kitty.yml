@@ -19,6 +19,58 @@
     - { key: "font_size", value: "12.0" }
   notify: restart kitty
 
+- name: Configure Kitty navigation keybindings
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.config/kitty/kitty.conf"
+    regexp: "^#?\\s*{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.value }}"
+    create: yes
+    backup: yes
+  loop:
+    - { key: "map cmd+h", value: "neighboring_window left" }
+    - { key: "map cmd+l", value: "neighboring_window right" }
+    - { key: "map cmd+k", value: "neighboring_window up" }
+    - { key: "map cmd+j", value: "neighboring_window down" }
+  notify: restart kitty
+
+- name: Configure Kitty split window keybindings
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.config/kitty/kitty.conf"
+    regexp: "^#?\\s*{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.value }}"
+    create: yes
+    backup: yes
+  loop:
+    - { key: "map cmd+d", value: "launch --location=hsplit" }
+    - { key: "map cmd+shift+d", value: "launch --location=vsplit" }
+    - { key: "map cmd+w", value: "close_window" }
+    - { key: "map cmd+shift+w", value: "close_os_window" }
+  notify: restart kitty
+
+- name: Configure Kitty window numbering and identification
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.config/kitty/kitty.conf"
+    regexp: "^#?\\s*{{ item.key }}\\s"
+    line: "{{ item.key }} {{ item.value }}"
+    create: yes
+    backup: yes
+  loop:
+    - { key: "map cmd+1", value: "nth_window 0" }
+    - { key: "map cmd+2", value: "nth_window 1" }
+    - { key: "map cmd+3", value: "nth_window 2" }
+    - { key: "map cmd+4", value: "nth_window 3" }
+    - { key: "map cmd+5", value: "nth_window 4" }
+    - { key: "map cmd+6", value: "nth_window 5" }
+    - { key: "map cmd+7", value: "nth_window 6" }
+    - { key: "map cmd+8", value: "nth_window 7" }
+    - { key: "map cmd+9", value: "nth_window 8" }
+    - { key: "enable_audio_bell", value: "no" }
+    - { key: "window_border_width", value: "0.5pt" }
+    - { key: "draw_minimal_borders", value: "yes" }
+    - { key: "window_margin_width", value: "0" }
+    - { key: "window_padding_width", value: "0" }
+  notify: restart kitty
+
 - name: Display Kitty configuration status
   debug:
-    msg: "Kitty has been configured with Menlo Regular 12pt font to match iTerm2"
+    msg: "Kitty has been configured with Menlo Regular 12pt font, vim-like navigation, tmux-style splits (cmd+d/shift+d), and window numbering (cmd+1-9)"

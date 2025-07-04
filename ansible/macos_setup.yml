@@ -13,6 +13,7 @@
     use_pyenv: "{{ feature_flags.use_pyenv | default(false) }}"
     use_custom_prompt: "{{ feature_flags.custom_shell_prompt | default(false) }}"
     use_alias_compat: "{{ feature_flags.alias_compatibility | default(false) }}"
+    use_kitty_pane_info: "{{ feature_flags.use_kitty_pane_info | default(false) }}"
     install_dutis: "{{ feature_flags.install_dutis | default(true) }}"
     dutis_auto_configure: "{{ feature_flags.dutis_auto_configure | default(true) }}"
 
