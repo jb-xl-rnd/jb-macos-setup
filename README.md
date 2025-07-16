@@ -331,6 +331,168 @@ To add a new shell function or alias:
 2. Ensure it has a unique name, description, and content
 3. Add a corresponding feature flag in `config/config.json` if needed
 
+## Installed Packages
+
+This setup installs **268 total packages** via Homebrew:
+- **231 Formulae** - Command-line tools, libraries, and headless programs
+- **37 Casks** - GUI applications and fonts
+
+### Homebrew Package Types
+
+**Formulae** are command-line tools, libraries, and headless programs that run in Terminal. They're installed with `brew install package-name`.
+
+**Casks** are GUI applications with .app bundles that appear in your Applications folder. They're installed with `brew install --cask app-name`.
+
+---
+
+## GUI Applications (Casks)
+
+### Productivity & Development
+- **visual-studio-code** - Code editor
+- **sublime-text** - Text editor
+- **obsidian** - Note-taking app
+- **keepassxc** - Password manager
+- **raycast** - Spotlight alternative
+- **rectangle** - Window manager
+
+### Terminals & System Tools
+- **iterm2** - Terminal emulator
+- **kitty** - Terminal emulator
+- **orbstack** - Docker alternative
+- **balenaetcher** - Disk image writer
+- **raspberry-pi-imager** - Pi disk imager
+
+### Browsers & Communication
+- **brave-browser** - Privacy-focused browser
+- **google-chrome** - Web browser
+- **discord** - Chat application
+- **teamspeak-client** - Voice communication
+- **webex** - Video conferencing
+
+### Media & Graphics
+- **gimp** - Image editor
+- **vlc** - Media player
+- **obs** - Screen recording
+- **spotify** - Music streaming
+
+### Design & Engineering
+- **autodesk-fusion** - 3D CAD software
+- **autodesk-fusion360** - Advanced 3D CAD
+- **prusaslicer** - 3D printing slicer
+- **ltspice** - Circuit simulator
+- **drawio** - Diagram editor
+- **qgroundcontrol** - Drone ground station
+
+### Academic & Research
+- **mactex** - LaTeX distribution
+- **zotero** - Reference manager
+- **mysqlworkbench** - Database tool
+
+### System & Utilities
+- **macfuse** - Filesystem in userspace
+- **rustdesk** - Remote desktop
+- **betterdiscord-installer** - Discord customizer
+- **blheli-configurator** - ESC configuration
+
+### Development Fonts
+- **font-fira-code-nerd-font** - Coding font with ligatures
+- **font-hack-nerd-font** - Monospace font with icons
+- **font-jetbrains-mono-nerd-font** - JetBrains coding font
+
+---
+
+## Command-Line Tools (Formulae)
+
+### Development Tools
+- **neovim** - Modern Vim-based text editor
+- **lazygit** - Terminal UI for git
+- **ripgrep** - Fast text search tool
+- **fd** - Fast file finder
+- **fzf** - Fuzzy finder for files/commands
+- **git** - Version control system
+- **jq** - JSON processor
+- **tree** - Directory tree display
+- **htop** - Process viewer
+- **tmux** - Terminal multiplexer
+- **shfmt** - Shell script formatter
+- **stylua** - Lua code formatter
+
+### Programming Languages & Runtimes
+- **python@3.10/3.11/3.12/3.13** - Python interpreters
+- **pyenv** - Python version management
+- **uv** - Fast Python package manager
+- **node** - JavaScript runtime
+- **go** - Go programming language
+- **deno** - Modern JavaScript/TypeScript runtime
+- **openjdk** - Java development kit
+- **maven** - Java build tool
+- **lua/luajit** - Lua scripting languages
+- **luarocks** - Lua package manager
+
+### System & Network Tools
+- **nmap** - Network scanner
+- **socat** - Network relay tool
+- **wget/curl** - Download tools
+- **rsync** - File synchronization
+- **dnsmasq** - DNS forwarder
+- **openvpn** - VPN client
+- **wifi-password** - WiFi password retrieval
+- **sshpass** - SSH password automation
+- **awscli** - AWS command line interface
+- **s3cmd** - S3 storage tool
+- **mas** - Mac App Store CLI
+
+### Media & Graphics
+- **ffmpeg** - Video/audio processing
+- **mpv** - Media player
+- **imagemagick** - Image manipulation
+- **raylib** - Game development library
+- **yt-dlp** - YouTube downloader
+
+### Hardware & Radio (SDR/Ham Radio)
+- **airspy/airspyhf** - SDR hardware support
+- **hackrf** - SDR hardware support
+- **libbladerf** - BladeRF SDR support
+- **hamlib** - Ham radio control
+- **libusb** - USB device access
+- **lsusb** - List USB devices
+
+### System Monitoring
+- **asitop** - Apple Silicon monitor
+- **nvtop** - GPU monitor
+- **iftop** - Network monitor
+- **macchina** - System info display
+
+### System Utilities & Core Tools
+- **coreutils** - GNU core utilities
+- **findutils** - GNU find utilities
+- **duti** - Default app manager
+- **ntfs-3g-mac** - NTFS write support
+- **bash** - Modern bash shell
+- **autoconf/automake** - Build tools
+- **cmake** - Cross-platform build system
+- **gcc** - GNU compiler collection
+- **llvm** - Compiler infrastructure
+- **pkgconf** - Package configuration
+- **libtool** - Library building tools
+
+### Libraries & Dependencies
+- **openssl@3** - Cryptography library
+- **ca-certificates** - SSL certificates
+- **curl** - Data transfer library
+- **sqlite** - Database engine
+- **zlib/zstd** - Compression libraries
+- **ncurses** - Terminal UI library
+- **readline** - Command line editing
+- **gettext** - Internationalization
+- **icu4c@77** - Unicode library
+- **glib** - Low-level system library
+- **pcre2** - Regular expression library
+
+### Configuration & Automation
+- **ansible** - Configuration management
+- **mailsy** - Email testing tool
+
 ## Additional Resources
 
 - [NTFS Support](./docs/SetupNTFSSupportMacOS.md): Instructions for enabling NTFS support on macOS
