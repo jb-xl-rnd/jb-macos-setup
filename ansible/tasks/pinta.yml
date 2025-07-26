@@ -1,0 +1,51 @@
+---
+# Ansible task file for Pinta installation (Intel workaround)
+
+- name: Temporary Pinta Intel workaround - Check if already installed
+  stat:
+    path: /Applications/Pinta.app
+  register: pinta_installed
+
+- name: Temporary Pinta Intel workaround - Download Intel DMG
+  get_url:
+    url: "https://github.com/PintaProject/Pinta/releases/download/3.0.2/Pinta-macos-x86_64.dmg"
+    dest: "/tmp/Pinta-macos-x86_64.dmg"
+    mode: '0644'
+  when: not pinta_installed.stat.exists
+
+- name: Temporary Pinta Intel workaround - Mount DMG
+  command: hdiutil attach /tmp/Pinta-macos-x86_64.dmg -nobrowse -quiet
+  when: not pinta_installed.stat.exists
+  register: dmg_mount
+
+- name: Temporary Pinta Intel workaround - Install to Applications
+  command: cp -R "/Volumes/Pinta Installer/Pinta.app" /Applications/
+  when: not pinta_installed.stat.exists
+
+- name: Temporary Pinta Intel workaround - Unmount DMG
+  command: hdiutil detach "/Volumes/Pinta Installer" -quiet
+  when: not pinta_installed.stat.exists
+  ignore_errors: yes
+
+- name: Temporary Pinta Intel workaround - Clean up DMG
+  file:
+    path: "/tmp/Pinta-macos-x86_64.dmg"
+    state: absent
+  when: not pinta_installed.stat.exists
+
+- name: Display Pinta workaround notice
+  debug:
+    msg: |
+      ==========================================================
+      PINTA INSTALLATION NOTICE
+      ==========================================================
+      
+      Installed Intel x86_64 version of Pinta as a workaround
+      for missing icons in ARM64 version on Apple Silicon.
+      
+      GitHub Issue: https://github.com/PintaProject/Pinta/issues/1605
+      
+      Usage: Use 'pinta' alias or open /Applications/Pinta.app
+      
+      This workaround will be removed once ARM64 version is fixed.
+      ==========================================================

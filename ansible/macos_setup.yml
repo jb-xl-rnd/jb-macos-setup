@@ -74,3 +74,8 @@
     - name: Configure Kitty terminal
       include_tasks: tasks/kitty.yml
       tags: [kitty, terminal]
+      
+    # Include Pinta installation (temporary Intel workaround)
+    - name: Install Pinta (Intel workaround)
+      include_tasks: tasks/pinta.yml
+      tags: [pinta, apps, workaround]
