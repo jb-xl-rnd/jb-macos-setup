@@ -47,7 +47,7 @@
   tasks:
     # Include package installation tasks
     - name: Install Homebrew packages and applications
-      include_tasks: tasks/packages.yml
+      import_tasks: tasks/packages.yml
       tags: [packages, brew, apps]
       
     # Include Python environment setup
@@ -79,3 +79,36 @@
     - name: Install Pinta (Intel workaround)
       include_tasks: tasks/pinta.yml
       tags: [pinta, apps, workaround]
+      
+    # Include yabai window manager configuration
+    - name: Configure yabai window manager
+      include_tasks: tasks/yabai.yml
+      tags: [yabai, wm, window-manager]
+      
+    # Final setup summary
+    - name: Display setup completion message
+      debug:
+        msg: |
+          ============================================================
+          MACOS SETUP COMPLETE!
+          ============================================================
+          
+          ✅ All packages and applications have been installed.
+          
+          ⚠️  IMPORTANT MANUAL STEPS:
+          
+          1. YABAI WINDOW MANAGER:
+             - Grant accessibility permissions to yabai and skhd
+             - System Settings > Privacy & Security > Accessibility
+             - Add: /opt/homebrew/bin/yabai and /opt/homebrew/bin/skhd
+             
+          2. RECTANGLE HAS BEEN REMOVED:
+             - Yabai replaces Rectangle's functionality
+             - See YABAI_SHORTCUTS.md for keyboard shortcuts
+             
+          3. START SERVICES:
+             yabai --start-service
+             skhd --start-service
+          
+          ============================================================
+      tags: [always]

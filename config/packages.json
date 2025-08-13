@@ -14,6 +14,7 @@
     {"name": "bash", "description": "Bourne-Again SHell, a UNIX command interpreter"},
     {"name": "bash-git-prompt", "description": "Informative, fancy bash prompt for Git users"},
     {"name": "brotli", "description": "Generic-purpose lossless compression algorithm by Google"},
+    {"name": "btop", "description": "Popular System Monitor"},
     {"name": "c-ares", "description": "Asynchronous DNS library"},
     {"name": "ca-certificates", "description": "Mozilla CA certificate store"},
     {"name": "cairo", "description": "Vector graphics library with cross-device output support"},
@@ -260,7 +261,6 @@
     {"name": "qgroundcontrol", "description": "Ground control station for drones"},
     {"name": "raspberry-pi-imager", "description": "Imaging utility to install operating systems to a microSD card"},
     {"name": "raycast", "description": "Control your tools with a few keystrokes"},
-    {"name": "rectangle", "description": "Move and resize windows using keyboard shortcuts or snap areas"},
     {"name": "rustdesk", "description": "Open source virtual/remote desktop application"},
     {"name": "spotify", "description": "Music streaming service"},
     {"name": "sublime-text", "description": "Text editor for code, markup and prose"},
@@ -326,6 +326,13 @@
       "name": "Xcode",
       "description": "IDE for macOS and iOS development"
     }
+  ],
+  "brew_taps": [
+    {"name": "koekeishiya/formulae", "description": "Tap for yabai and skhd"}
+  ],
+  "brew_tap_packages": [
+    {"tap": "koekeishiya/formulae", "name": "yabai", "description": "Tiling window manager for macOS"},
+    {"tap": "koekeishiya/formulae", "name": "skhd", "description": "Simple hotkey daemon for macOS"}
   ],
   "pip_packages": [
     "certifi",

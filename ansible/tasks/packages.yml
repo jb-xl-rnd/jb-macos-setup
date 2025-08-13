@@ -17,6 +17,14 @@
     var: update_result.stdout_lines
     verbosity: 1
   
+- name: Add Homebrew taps
+  community.general.homebrew_tap:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ brew_taps | default([]) }}"
+  when: brew_taps is defined
+  ignore_errors: yes
+
 - name: Debug - Display package format
   debug:
     var: brew_packages
@@ -34,6 +42,21 @@
   debug:
     var: brew_result
     verbosity: 1
+
+- name: Install Homebrew tap packages
+  community.general.homebrew:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ brew_tap_packages | default([]) }}"
+  when: brew_tap_packages is defined
+  register: brew_tap_result
+  ignore_errors: yes
+
+- name: Debug failed homebrew tap installations
+  debug:
+    var: brew_tap_result
+    verbosity: 1
+  when: brew_tap_result is defined
   
 - name: Debug - Display cask app format
   debug:
