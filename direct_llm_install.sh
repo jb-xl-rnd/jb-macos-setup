@@ -13,12 +13,20 @@ caffeinate -dims bash << 'INSTALL'
 export PATH="/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 export HOMEBREW_NO_AUTO_UPDATE=1
 
-echo "=== Step 1: Creating directories ==="
+echo "=== Step 1: Installing cmake if needed ==="
+if ! command -v cmake &> /dev/null; then
+    echo "Installing cmake..."
+    brew install cmake
+else
+    echo "cmake already installed"
+fi
+
+echo "=== Step 2: Creating directories ==="
 mkdir -p ~/llm-workspace/models
 mkdir -p ~/llm-workspace/logs
 cd ~/llm-workspace
 
-echo "=== Step 2: Cloning llama.cpp ==="
+echo "=== Step 3: Cloning llama.cpp ==="
 if [ ! -d "llama.cpp" ]; then
     git clone https://github.com/ggerganov/llama.cpp.git
 else
@@ -27,7 +35,7 @@ else
     cd ..
 fi
 
-echo "=== Step 3: Building llama.cpp ==="
+echo "=== Step 4: Building llama.cpp ==="
 cd llama.cpp
 rm -rf build
 mkdir -p build
@@ -37,7 +45,7 @@ cd build
 cmake .. -DLLAMA_METAL=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release -j$(sysctl -n hw.ncpu)
 
-echo "=== Step 4: Downloading TinyLlama model ==="
+echo "=== Step 5: Downloading TinyLlama model ==="
 cd ~/llm-workspace/models
 if [ ! -f "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf" ]; then
     echo "Downloading model (637MB)..."
@@ -47,7 +55,7 @@ else
     echo "Model already downloaded"
 fi
 
-echo "=== Step 5: Creating launch script ==="
+echo "=== Step 6: Creating launch script ==="
 cat > ~/llm-workspace/start_server.sh << 'SCRIPT'
 #!/bin/bash
 cd ~/llm-workspace
@@ -68,7 +76,7 @@ echo "Access at: http://127.0.0.1:8080"
 SCRIPT
 chmod +x ~/llm-workspace/start_server.sh
 
-echo "=== Step 6: Creating test script ==="
+echo "=== Step 7: Creating test script ==="
 cat > ~/llm-workspace/test_llm.sh << 'TEST'
 #!/bin/bash
 echo "Testing LLM server..."
@@ -102,12 +110,12 @@ fi
 TEST
 chmod +x ~/llm-workspace/test_llm.sh
 
-echo "=== Step 7: Starting server ==="
+echo "=== Step 8: Starting server ==="
 ~/llm-workspace/start_server.sh
 
 sleep 5
 
-echo "=== Step 8: Testing setup ==="
+echo "=== Step 9: Testing setup ==="
 ~/llm-workspace/test_llm.sh
 
 echo "=== Installation Complete ==="
