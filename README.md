@@ -1,549 +1,289 @@
 # MacOS Setup Scripts
 
-A collection of scripts and configurations for setting up a new macOS machine. These scripts automate the installation of various developer tools, applications, and system configurations to get a new Mac up and running quickly.
+A comprehensive collection of scripts and configurations for setting up a new macOS machine with developer tools, applications, and local LLM capabilities. These scripts automate the installation process and support both interactive and fully headless deployments.
 
 ## Overview
 
-This project contains several scripts that help with different aspects of setting up a macOS machine:
+This project provides multiple installation approaches for setting up a macOS machine:
 
-- `scripts/setupInitialMacOS.sh`: Sets up the initial environment with Homebrew, iTerm2, and shell configurations
-- `scripts/setupAnsible.sh`: Installs Ansible for configuration management
-- `scripts/setupMacOs.sh`: Installs various packages, applications, and configurations using Homebrew
-- `ansible/macos_setup.yml`: Ansible playbook for more comprehensive system setup
-- `docs/SetupNTFSSupportMacOS.md`: Instructions for enabling NTFS support on macOS
-
-## Directory Structure
-
-- `scripts/`: Contains all bash scripts for setup
-- `ansible/`: Contains Ansible playbooks and configurations
-- `docs/`: Contains documentation for specific tasks
+- **Interactive Setup**: Menu-driven installation with `install.sh`
+- **Headless Setup**: Fully automated installation for remote deployment
+- **Ansible-based**: Comprehensive, idempotent configuration management
+- **Direct Scripts**: Targeted installations for specific components
+- **LLM Integration**: Local AI/LLM capabilities with llama.cpp
 
 ## Quick Start
 
-For a fresh macOS installation, use the interactive installer:
-
+### Interactive Installation (Recommended for Desktop)
 ```bash
 ./install.sh
 ```
 
-Or you can run individual scripts:
+### Headless Installation (For Remote/Automated Setup)
+```bash
+# Complete setup without GUI interactions
+./install_headless.sh --all
 
-1. **Initial Setup**: Run the initial setup script to install essential tools
-   ```bash
-   ./scripts/setupInitialMacOS.sh
-   ```
+# Just install LLM components
+./install_headless.sh --llm
 
-2. **Setup with Ansible (Comprehensive, Idempotent):**
-   
-   First install Ansible:
-   ```bash
-   ./scripts/setupAnsible.sh
-   ```
-   
-   Test the setup (recommended):
-   ```bash
-   ./scripts/test-ansible.sh
-   ```
-   
-   Then run the playbook:
-   ```bash
-   ansible-playbook ./ansible/macos_setup.yml
-   ```
+# Run with sleep prevention
+./install_nosleep.sh
+```
 
-## Configuration Options
+### Direct LLM Installation
+```bash
+# Quick LLM setup bypassing ansible
+./direct_llm_install.sh
+```
 
-The project now uses configuration files to manage which packages and settings are installed:
+## Directory Structure
 
-- **config/packages.json**: Contains lists of all packages to install
-- **config/shell_config.json**: Contains shell configurations and useful aliases
-- **config/config.json**: Controls feature flags and configuration options
+```
+MacOS/
+├── ansible/                  # Ansible playbooks and templates
+│   ├── macos_setup.yml      # Main playbook
+│   ├── tasks/               # Individual task modules
+│   └── templates/           # Jinja2 templates
+├── config/                  # Configuration files
+│   ├── packages.json        # Package definitions
+│   ├── shell_config.json   # Shell configurations
+│   ├── config.json         # Feature flags
+│   └── llm_config.json     # LLM settings
+├── scripts/                 # Setup scripts
+│   ├── setupInitialMacOS.sh # Initial environment setup
+│   ├── setupAnsible.sh      # Ansible installation
+│   ├── prevent_sleep.sh    # Sleep prevention utility
+│   └── setup_permissions.sh # Permission configuration
+├── docs/                    # Documentation
+└── install*.sh             # Various installers
+```
 
-### Feature Flags
+## Installation Methods
 
-The `config.json` file contains feature flags that control various aspects of the setup:
+### 1. Standard Ansible-based Setup
 
-- **use_pyenv**: Enable Python version management with pyenv
-- **use_uv_package_manager**: Use the modern UV package manager for Python
-- **custom_shell_prompt**: Configure a custom shell prompt
-- **alias_compatibility**: Add Linux compatibility aliases for macOS
-- **install_dutis**: Install the dutis utility for managing default applications
-- **dutis_auto_configure**: Automatically configure default applications without user interaction
+```bash
+# Install Ansible
+./scripts/setupAnsible.sh
 
-You can customize these files to tailor the installation to your needs.
+# Run complete setup
+ansible-playbook ./ansible/macos_setup.yml
+
+# Run specific components with tags
+ansible-playbook ./ansible/macos_setup.yml --tags packages
+ansible-playbook ./ansible/macos_setup.yml --tags llm
+ansible-playbook ./ansible/macos_setup.yml --tags shell
+```
+
+### 2. Headless Deployment
+
+Perfect for remote machines or CI/CD:
+
+```bash
+# Full headless installation with all components
+./install_headless.sh --all
+
+# Individual components
+./install_headless.sh --initial      # Homebrew and basics
+./install_headless.sh --ansible      # Run ansible playbook
+./install_headless.sh --llm          # LLM setup only
+./install_headless.sh --test         # Test installation
+```
+
+### 3. Direct Component Installation
+
+For when you need specific functionality without the full setup:
+
+```bash
+# Direct LLM installation (fastest)
+./direct_llm_install.sh
+
+# Sleep prevention during long operations
+./scripts/prevent_sleep.sh start
+# ... run your installation ...
+./scripts/prevent_sleep.sh stop
+```
 
 ## Features
 
-- **Homebrew Setup**: Automatic installation and configuration of Homebrew
-- **Developer Tools**: Installation of common development tools (neovim, git, etc.)
-- **Applications**: Installation of essential applications (browsers, productivity tools, etc.)
-- **Default App Manager**: Integration of dutis for managing file associations and default applications
-- **Python Environment**: Configuration of a Python development environment with pyenv
-- **UV Package Manager**: Support for the modern UV Python package manager with isolated virtual environments
-- **Custom Shell Configuration**: Configuration of zsh with useful aliases and functions
-- **Linux Compatibility Aliases**: Aliases for Linux commands like `lsblk` that map to macOS equivalents
-- **LazyVim**: Pre-configured Neovim with LazyVim starter configuration
+### Core Development Environment
+- **Homebrew**: Package manager with 200+ pre-configured packages
+- **Development Tools**: git, neovim (LazyVim), VS Code, tmux
+- **Languages**: Python 3.12+, Node.js, Go, Deno
+- **Build Tools**: cmake, gcc, autoconf, automake
+- **Cloud Tools**: AWS CLI, Docker alternatives (OrbStack)
 
-## Detailed Feature Documentation
+### Shell Environment
+- **Custom Prompt**: Git-aware, minimalist design
+- **Aliases**: Linux compatibility commands, productivity shortcuts
+- **UV Package Manager**: Modern Python package management
+- **Pyenv**: Python version management
 
-### Developer Toolchain
+### Local LLM Capabilities (New!)
+- **llama.cpp**: High-performance LLM inference
+- **Metal Acceleration**: Optimized for Apple Silicon
+- **Model Management**: Easy model downloading and switching
+- **API Server**: OpenAI-compatible API endpoint
+- **Client Tools**: Python client and CLI utilities
 
-This setup installs a comprehensive developer environment with tools for:
+### Default Application Management
+- **dutis**: Command-line tool for file associations
+- **Automated Configuration**: Set default apps for file types
 
-- **Text Editing**: neovim with LazyVim configuration, Visual Studio Code, Sublime Text
-- **Version Control**: git with enhanced prompt
-- **Command Line**: iterm2, tmux, tree, jq, coreutils
-- **Languages**: Python, Node.js, Go, Deno
-- **Build Tools**: cmake, gcc
-- **Cloud**: awscli
+## LLM Setup
 
-### Python Configuration
+The LLM integration provides local AI capabilities:
 
-The Python environment is carefully structured to avoid common pitfalls:
+### Components Installed
+- llama.cpp with Metal GPU acceleration
+- TinyLlama 1.1B model (default, 637MB)
+- HTTP API server (OpenAI-compatible)
+- Python client library
+- Management scripts
 
-1. **pyenv**: Manages Python versions to isolate from system Python
-2. **UV**: Modern, fast replacement for pip (up to 10-100x faster)
-3. **Isolated Environments**: All packages install in a dedicated virtual environment
-4. **Activation Script**: Auto-generated script to easily activate the environment
-
-### macOS-Specific Enhancements
-
-These scripts include macOS-specific improvements:
-
-- **Homebrew**: The missing package manager for macOS
-- **Default Apps**: Uses `dutis` to set file associations (unlike Linux's simpler approach)
-  - Allows setting default applications for specific file extensions (e.g., `sudo dutis mp4`)
-  - Supports file type groups for bulk assignment (e.g., `sudo dutis --group video`)
-  - Integrates with macOS UTI (Uniform Type Identifier) system
-- **System Monitoring**: Tools like `asitop` for Apple Silicon metrics
-- **Window Management**: Rectangle for keyboard-based window positioning
-
-### LazyVim Configuration
-
-LazyVim is a Neovim configuration that transforms Neovim into a modern IDE-like experience. Our setup automatically installs and configures LazyVim with:
-
-#### What LazyVim Provides
-- **Plugin Management**: Lazy.nvim for fast, lazy-loaded plugins
-- **LSP Integration**: Built-in Language Server Protocol support for intelligent code features
-- **Syntax Highlighting**: TreeSitter-based syntax highlighting for 100+ languages
-- **File Explorer**: Neo-tree for project navigation
-- **Fuzzy Finding**: Telescope for file/text search
-- **Git Integration**: Built-in git signs and LazyGit integration
-- **Modern UI**: Beautiful, informative status line and notifications
-
-#### Prerequisites Installed
-Our setup automatically installs all LazyVim prerequisites:
-- **fzf**: Fuzzy finder for file searching
-- **ripgrep**: Fast text searching across files
-- **fd**: Fast file finder
-- **lazygit**: Terminal UI for git operations
-- **curl**: HTTP client for plugin downloads
-
-#### Installation Process
-The LazyVim installation:
-1. **Backs up existing Neovim configuration** (if any) to `.bak` extensions
-2. **Clones LazyVim starter** repository to `~/.config/nvim`
-3. **Removes git history** for clean customization
-4. **Preserves your ability to customize** the configuration
-
-#### Using LazyVim
-After installation:
+### Usage
 ```bash
-# Start Neovim - LazyVim will auto-install plugins on first run
-nvim
+# Start LLM server
+~/llm-workspace/start_server.sh
 
-# In Neovim, check plugin health
-:LazyHealth
+# Test the setup
+~/llm-workspace/test_llm.sh
 
-# View plugin manager
-:Lazy
+# Use the API
+curl -X POST http://localhost:8080/v1/chat/completions \
+  -H "Content-Type: application/json" \
+  -d '{"messages":[{"role":"user","content":"Hello!"}]}'
 
-# Access LazyVim documentation
-:help LazyVim
+# Interactive CLI
+llm --interactive
+llm --prompt "Your question here"
 ```
 
-#### Key Features for Developers
-- **Zero-config LSP**: Language servers auto-install for most languages
-- **Code completion**: Intelligent autocompletion with snippets
-- **File navigation**: Quick file switching with `<leader>ff`
-- **Text search**: Project-wide search with `<leader>sg`
-- **Git integration**: View changes, blame, and stage hunks
-- **Terminal integration**: Built-in terminal with `<leader>ft`
+### Available Models
+Configure additional models in `config/llm_config.json`:
+- TinyLlama 1.1B (default)
+- Phi-3 Mini 4K
+- Custom GGUF models
 
-LazyVim can be run independently with:
-```bash
-ansible-playbook ansible/macos_setup.yml --tags lazyvim
+## Configuration
+
+### Package Configuration (`config/packages.json`)
+Define which packages to install:
+```json
+{
+  "brew_packages": [...],
+  "brew_cask_apps": [...],
+  "mas_apps": [...]
+}
 ```
 
-### Default Application Management with dutis
-
-Dutis is a powerful command-line utility for managing file associations on macOS. Unlike the simple file association mechanisms in Linux, macOS uses a complex UTI (Uniform Type Identifier) system. Dutis simplifies this process.
-
-#### How dutis Works
-
-Dutis interacts with macOS's Launch Services database to manage file associations. It provides several ways to set default applications:
-
-1. **Individual File Extensions**: Set a default app for a specific file extension
-   ```bash
-   # Interactive mode - shows a menu of available applications
-   dutis mp4
-   
-   # Non-interactive mode with --write flag
-   dutis mp4 --write "VLC"
-   ```
-
-2. **File Type Groups**: Efficiently set defaults for multiple related file types at once
-   ```bash
-   # Set default for all video formats
-   dutis --group video --write "VLC"
-   
-   # Set default for all code files
-   dutis --group code --write "Visual Studio Code"
-   ```
-
-3. **UTI (Uniform Type Identifier)**: For more advanced usage with macOS's type system
-   ```bash
-   # Set default for public.html UTI
-   dutis --uti public.html --write "Firefox"
-   ```
-
-#### File Type Groups
-
-One of dutis's most powerful features is its group system, which allows you to organize file extensions into logical groups and assign default applications to entire groups at once. 
-
-Common file type groups include:
-- `video` (mp4, mov, mkv, etc.)
-- `audio` (mp3, flac, wav, etc.)
-- `image` (jpg, png, webp, etc.)
-- `code` (js, py, rs, etc.)
-- `archive` (zip, tar, gz, etc.)
-
-You can customize these groups by editing the `~/.config/dutis/groups.yaml` file after installation. Our setup automatically creates a comprehensive group configuration for you.
-
-```bash
-# List all defined groups and their extensions
-dutis --list-groups
-
-# Set default application for all files in a group
-dutis --group video --write "VLC"
+### Feature Flags (`config/config.json`)
+Control installation behavior:
+```json
+{
+  "feature_flags": {
+    "use_pyenv": true,
+    "use_uv_package_manager": true,
+    "custom_shell_prompt": true,
+    "install_dutis": true
+  }
+}
 ```
 
-#### Default Application Configuration
-
-Our setup includes a script for configuring default applications using dutis. This script sets appropriate default applications for common file types without requiring user interaction:
-
-- Text/Code files (.md, .json, .py, etc.) → Visual Studio Code
-- Media files (.mp4, .mkv, .mp3, etc.) → VLC
-- Archive files (.zip, .rar, .7z, etc.) → The Unarchiver
-- Images (.jpg, .png, .gif, etc.) → Preview
-- PDFs → Preview
-
-This feature can be controlled with the `dutis_auto_configure` feature flag in `config/config.json`. When enabled, a script is created at `~/.local/bin/set_default_apps.sh` which you can run after installation:
-
-```bash
-~/.local/bin/set_default_apps.sh
+### LLM Configuration (`config/llm_config.json`)
+Configure LLM settings:
+```json
+{
+  "llm_settings": {
+    "server_port": 8080,
+    "default_model": "tinyllama",
+    "metal_acceleration": true
+  }
+}
 ```
 
-The script is designed to work without root privileges by installing dutis to `~/.local/bin` instead of system directories. Additionally, it uses the `--write` option for non-interactive operation, making it suitable for automation.
+## Headless Installation Notes
 
-#### Implementation Details
+For completely unattended installation:
 
-Our implementation:
-1. Installs dutis locally without requiring sudo privileges
-2. Creates a comprehensive group configuration in `~/.config/dutis/groups.yaml`
-3. Provides a script that uses the non-interactive `--write` option to set defaults
-4. Uses group assignments when possible for efficiency
-5. Includes timeout protection to prevent hanging during automated setup
+1. **Prevent Sleep**: Scripts use `caffeinate` to prevent system sleep
+2. **Handle Permissions**: Automated firewall and security configuration
+3. **Skip GUI Prompts**: Pre-configured to avoid permission dialogs
+4. **Remote Access**: SSH-friendly with no interactive prompts
 
-## Operation Modes
+Example for remote deployment:
+```bash
+ssh user@mac-mini 'cd ~/macos-setup && ./install_headless.sh --all'
+```
 
-### Ansible Playbook (macos_setup.yml)
+## Security Considerations
 
-The Ansible approach offers:
-- **Idempotent** operation (can be run multiple times safely)
-- **Declarative configuration** of the entire system
-- **Feature toggles** for enabling/disabling components
-- **Modular task files** for better organization and maintenance
-- Better for managing multiple machines or team setups
+The headless scripts temporarily relax some security settings during installation:
+- Gatekeeper is temporarily disabled
+- Firewall exceptions are added for development tools
+- These are automatically restored after installation
 
-The playbook is organized into separate task files for better maintainability:
-- `tasks/packages.yml`: Installation of Homebrew packages and applications
-- `tasks/python_env.yml`: Python environment setup with pyenv and UV
-- `tasks/shell_config.yml`: Shell configuration for zsh
-- `tasks/dutis.yml`: Installation and configuration of dutis for default applications
-- `tasks/lazyvim.yml`: LazyVim installation and configuration
-
-#### Ansible Requirements
-
-Unlike the bash script, Ansible has prerequisites:
-- Python must be installed first (the setupAnsible.sh script handles this)
-- Ansible collections must be installed (automatically handled by the playbook)
-- Proper permissions for running Ansible tasks
-- Some familiarity with Ansible concepts (playbooks, tasks, etc.)
-
-#### Ansible Improvements
-
-Recent improvements to the Ansible setup include:
-- **Auto-installation of collections**: The playbook automatically installs required Ansible collections
-- **Requirements file**: `ansible/requirements.yml` specifies needed collections
-- **Test script**: `scripts/test-ansible.sh` validates the setup before running
-- **Better error handling**: Improved syntax and error detection
-
-#### Execution Details
-
-The Ansible playbook:
-1. Loads variables from all JSON config files
-2. Executes tasks based on enabled feature flags
-3. Skips tasks that have already been completed
-4. Provides detailed output of what changed
-5. Can be safely re-run multiple times
-
-## Python Environment Management
-
-This project uses UV, a modern Python package manager that's much faster than pip, to manage Python packages.
-Instead of installing packages globally, our setup uses isolated virtual environments:
-
-- All Python packages are installed in `~/.venvs/macos-setup`
-- An activation script is created at `~/activate-macos-setup.sh`
-- To use these packages, simply run: `source ~/activate-macos-setup.sh`
-
-This approach prevents conflicts and keeps your global Python environment clean.
-
-## Customization
-
-You can customize the installations by editing the configuration files:
-
-- `config/packages.json`: Add or remove packages from the various package lists
-- `config/shell_config.json`: Modify shell configurations and aliases
-- `config/config.json`: Toggle features and set which packages are included in minimal mode
-
-### Adding a New Package
-
-To add a new package to install:
-
-1. Add it to the appropriate list in `config/packages.json`
-2. If it should be included in minimal installations, also add it to the `core_packages` list in `config/config.json`
-
-### Adding a New Shell Configuration
-
-To add a new shell function or alias:
-
-1. Add a new entry to the `zsh_additions` array in `config/shell_config.json`
-2. Ensure it has a unique name, description, and content
-3. Add a corresponding feature flag in `config/config.json` if needed
-
-## Installed Packages
-
-This setup installs **268 total packages** via Homebrew:
-- **231 Formulae** - Command-line tools, libraries, and headless programs
-- **37 Casks** - GUI applications and fonts
-
-### Homebrew Package Types
-
-**Formulae** are command-line tools, libraries, and headless programs that run in Terminal. They're installed with `brew install package-name`.
-
-**Casks** are GUI applications with .app bundles that appear in your Applications folder. They're installed with `brew install --cask app-name`.
-
----
-
-## GUI Applications (Casks)
-
-### Productivity & Development
-- **visual-studio-code** - Code editor
-- **sublime-text** - Text editor
-- **obsidian** - Note-taking app
-- **keepassxc** - Password manager
-- **raycast** - Spotlight alternative
-- **rectangle** - Window manager
-
-### Terminals & System Tools
-- **iterm2** - Terminal emulator
-- **kitty** - Terminal emulator
-- **orbstack** - Docker alternative
-- **balenaetcher** - Disk image writer
-- **raspberry-pi-imager** - Pi disk imager
-
-### Browsers & Communication
-- **brave-browser** - Privacy-focused browser
-- **google-chrome** - Web browser
-- **discord** - Chat application
-- **teamspeak-client** - Voice communication
-- **webex** - Video conferencing
-
-### Media & Graphics
-- **gimp** - Image editor
-- **vlc** - Media player
-- **obs** - Screen recording
-- **spotify** - Music streaming
-
-### Design & Engineering
-- **autodesk-fusion** - 3D CAD software
-- **autodesk-fusion360** - Advanced 3D CAD
-- **prusaslicer** - 3D printing slicer
-- **ltspice** - Circuit simulator
-- **drawio** - Diagram editor
-- **qgroundcontrol** - Drone ground station
-
-### Academic & Research
-- **mactex** - LaTeX distribution
-- **zotero** - Reference manager
-- **mysqlworkbench** - Database tool
-
-### System & Utilities
-- **macfuse** - Filesystem in userspace
-- **rustdesk** - Remote desktop
-- **betterdiscord-installer** - Discord customizer
-- **blheli-configurator** - ESC configuration
-
-### Development Fonts
-- **font-fira-code-nerd-font** - Coding font with ligatures
-- **font-hack-nerd-font** - Monospace font with icons
-- **font-jetbrains-mono-nerd-font** - JetBrains coding font
-
----
-
-## Command-Line Tools (Formulae)
-
-### Development Tools
-- **neovim** - Modern Vim-based text editor
-- **lazygit** - Terminal UI for git
-- **ripgrep** - Fast text search tool
-- **fd** - Fast file finder
-- **fzf** - Fuzzy finder for files/commands
-- **git** - Version control system
-- **jq** - JSON processor
-- **tree** - Directory tree display
-- **htop** - Process viewer
-- **tmux** - Terminal multiplexer
-- **shfmt** - Shell script formatter
-- **stylua** - Lua code formatter
-
-### Programming Languages & Runtimes
-- **python@3.10/3.11/3.12/3.13** - Python interpreters
-- **pyenv** - Python version management
-- **uv** - Fast Python package manager
-- **node** - JavaScript runtime
-- **go** - Go programming language
-- **deno** - Modern JavaScript/TypeScript runtime
-- **openjdk** - Java development kit
-- **maven** - Java build tool
-- **lua/luajit** - Lua scripting languages
-- **luarocks** - Lua package manager
-
-### System & Network Tools
-- **nmap** - Network scanner
-- **socat** - Network relay tool
-- **wget/curl** - Download tools
-- **rsync** - File synchronization
-- **dnsmasq** - DNS forwarder
-- **openvpn** - VPN client
-- **wifi-password** - WiFi password retrieval
-- **sshpass** - SSH password automation
-- **awscli** - AWS command line interface
-- **s3cmd** - S3 storage tool
-- **mas** - Mac App Store CLI
-
-### Media & Graphics
-- **ffmpeg** - Video/audio processing
-- **mpv** - Media player
-- **imagemagick** - Image manipulation
-- **raylib** - Game development library
-- **yt-dlp** - YouTube downloader
-
-### Hardware & Radio (SDR/Ham Radio)
-- **airspy/airspyhf** - SDR hardware support
-- **hackrf** - SDR hardware support
-- **libbladerf** - BladeRF SDR support
-- **hamlib** - Ham radio control
-- **libusb** - USB device access
-- **lsusb** - List USB devices
-
-### System Monitoring
-- **asitop** - Apple Silicon monitor
-- **btop** - System monitor
-- **nvtop** - GPU monitor
-- **iftop** - Network monitor
-- **macchina** - System info display
-
-### System Utilities & Core Tools
-- **coreutils** - GNU core utilities
-- **findutils** - GNU find utilities
-- **duti** - Default app manager
-- **ntfs-3g-mac** - NTFS write support
-- **bash** - Modern bash shell
-- **autoconf/automake** - Build tools
-- **cmake** - Cross-platform build system
-- **gcc** - GNU compiler collection
-- **llvm** - Compiler infrastructure
-- **pkgconf** - Package configuration
-- **libtool** - Library building tools
-
-### Libraries & Dependencies
-- **openssl@3** - Cryptography library
-- **ca-certificates** - SSL certificates
-- **curl** - Data transfer library
-- **sqlite** - Database engine
-- **zlib/zstd** - Compression libraries
-- **ncurses** - Terminal UI library
-- **readline** - Command line editing
-- **gettext** - Internationalization
-- **icu4c@77** - Unicode library
-- **glib** - Low-level system library
-- **pcre2** - Regular expression library
-
-### Configuration & Automation
-- **ansible** - Configuration management
-- **mailsy** - Email testing tool
-
-## Additional Resources
-
-- [NTFS Support](./docs/SetupNTFSSupportMacOS.md): Instructions for enabling NTFS support on macOS
-
-## Requirements
-
-- macOS (tested on recent versions including Apple Silicon)
-- Administrative privileges
+To manually restore security settings:
+```bash
+~/restore_security.sh  # Created during headless setup
+```
 
 ## Troubleshooting
 
-### Common Issues
+### Installation Takes Too Long
+- Use `install_nosleep.sh` to prevent sleep
+- Check network connectivity for package downloads
+- Consider using `--tags` to install specific components
 
-1. **Homebrew installation fails**
-   - Check your internet connection
-   - Try running the command manually: `/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"`
-   - Ensure you have the Xcode Command Line Tools: `xcode-select --install`
+### Permission Popups During Installation
+- Use `install_fully_headless.sh` for unattended setup
+- Run `scripts/setup_permissions.sh` before installation
 
-2. **Mac App Store (mas) installations fail**
-   - Ensure you're signed into the App Store application
-   - Some apps may require manual installation if they're region-restricted
-   - Check if the App Store is experiencing issues
+### LLM Server Not Accessible
+- Check firewall settings
+- Ensure server is bound to correct interface (0.0.0.0 for external)
+- Verify model file exists in `~/llm-workspace/models/`
 
-3. **Python package installations fail**
-   - Make sure your UV installation is working: `uv --version`
-   - Check for permissions issues in the ~/.venvs directory
-   - Try running with sudo if needed for certain packages
+## Testing
 
-4. **Shell configurations not applied**
-   - Run `source ~/.zshrc` to apply changes immediately
-   - Restart your terminal application
-   - Check for syntax errors in the zsh configuration
-
-### Reset and Retry
-
-If you encounter persistent issues, you can try a fresh start:
-
+Verify your installation:
 ```bash
-# Remove Python virtual environments
-rm -rf ~/.venvs
+# Test everything
+./test_llm_setup.sh
 
-# Reset shell configurations (backup first!)
-cp ~/.zshrc ~/.zshrc.backup
-grep -v "ANSIBLE MANAGED BLOCK\|macchina\|neofetch\|lsblk\|UV_VIRTUALENV\|PYENV_ROOT\|precmd_functions" ~/.zshrc.backup > ~/.zshrc
-
-# Try installation again
-./scripts/setupInitialMacOS.sh
-./scripts/setupMacOs.sh
+# Test specific components
+ansible-playbook ansible/macos_setup.yml --check
+llm --mode health
 ```
+
+## Requirements
+
+- macOS 14.0 or later (tested on Sequoia 15.5)
+- Admin (sudo) access
+- Internet connection for package downloads
+- ~50GB free disk space for full installation
+- Apple Silicon recommended for LLM features
+
+## Contributing
+
+Contributions are welcome! Please:
+1. Test changes on a fresh macOS installation
+2. Update documentation for new features
+3. Follow existing naming conventions
+4. Add feature flags for optional components
 
 ## License
 
-This project is available for personal use.
+MIT - See LICENSE file for details
+
+## Acknowledgments
+
+- Built with Ansible for idempotent configuration
+- Uses llama.cpp for efficient LLM inference
+- Inspired by various dotfiles projects
+- Community contributions and feedback
+
+---
+
+**Note**: This setup is optimized for developer machines and includes many development tools. Review `config/packages.json` to customize for your needs.
