@@ -1,0 +1,43 @@
+{
+  "llm_settings": {
+    "enabled": true,
+    "install_dir": "~/llm-workspace",
+    "models_dir": "~/llm-workspace/models",
+    "logs_dir": "~/llm-workspace/logs",
+    "default_model": "tinyllama",
+    "server_port": 8080,
+    "server_host": "127.0.0.1",
+    "auto_start": true,
+    "metal_acceleration": true,
+    "context_size": 2048,
+    "batch_size": 512,
+    "n_gpu_layers": -1,
+    "n_threads": 4
+  },
+  "models": {
+    "tinyllama": {
+      "url": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+      "filename": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+      "size": "637MB",
+      "context_size": 2048,
+      "parameters": "1.1B",
+      "quantization": "Q4_K_M",
+      "description": "Lightweight model for basic tasks"
+    },
+    "phi3-mini": {
+      "url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf",
+      "filename": "phi-3-mini-4k-instruct-q4.gguf",
+      "size": "~2.4GB",
+      "context_size": 4096,
+      "parameters": "3.8B",
+      "quantization": "Q4",
+      "description": "More capable reasoning model"
+    }
+  },
+  "feature_flags": {
+    "install_llama_cpp": true,
+    "download_models": true,
+    "setup_service": true,
+    "install_client_tools": true
+  }
+}

@@ -459,6 +459,7 @@ This setup installs **268 total packages** via Homebrew:
 
 ### System Monitoring
 - **asitop** - Apple Silicon monitor
+- **btop** - System monitor
 - **nvtop** - GPU monitor
 - **iftop** - Network monitor
 - **macchina** - System info display

@@ -261,6 +261,7 @@
     {"name": "qgroundcontrol", "description": "Ground control station for drones"},
     {"name": "raspberry-pi-imager", "description": "Imaging utility to install operating systems to a microSD card"},
     {"name": "raycast", "description": "Control your tools with a few keystrokes"},
+    {"name": "rectangle", "description": "Move and resize windows with ease"},
     {"name": "rustdesk", "description": "Open source virtual/remote desktop application"},
     {"name": "spotify", "description": "Music streaming service"},
     {"name": "sublime-text", "description": "Text editor for code, markup and prose"},
@@ -327,13 +328,8 @@
       "description": "IDE for macOS and iOS development"
     }
   ],
-  "brew_taps": [
-    {"name": "koekeishiya/formulae", "description": "Tap for yabai and skhd"}
-  ],
-  "brew_tap_packages": [
-    {"tap": "koekeishiya/formulae", "name": "yabai", "description": "Tiling window manager for macOS"},
-    {"tap": "koekeishiya/formulae", "name": "skhd", "description": "Simple hotkey daemon for macOS"}
-  ],
+  "brew_taps": [],
+  "brew_tap_packages": [],
   "pip_packages": [
     "certifi",
     "cffi",
