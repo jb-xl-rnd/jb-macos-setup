@@ -61,7 +61,22 @@ MacOS/
 
 ## Installation Methods
 
-### 1. Standard Ansible-based Setup
+### 1. Server Mode Installation (Mac Mini)
+
+For dedicated Mac Mini servers that should never sleep:
+
+```bash
+./install_server.sh
+```
+
+This configures:
+- **Permanent wake state** - System never sleeps
+- **LLM server** - Accessible from network (0.0.0.0:8080)
+- **Auto-restart** - On power failure
+- **Wake on network** - Remote access enabled
+- **Persistent caffeinate** - LaunchDaemon ensures system stays awake
+
+### 2. Standard Ansible-based Setup
 
 ```bash
 # Install Ansible
@@ -106,6 +121,21 @@ For when you need specific functionality without the full setup:
 ```
 
 ## Features
+
+### Server Mode (Mac Mini)
+When `enable_server_mode` is true:
+- **Never Sleep**: System stays awake 24/7
+- **Network Wake**: Wake on LAN enabled
+- **Auto-restart**: Automatic restart after power failure
+- **Persistent Caffeinate**: LaunchDaemon keeps system awake
+- **LLM Server**: Accessible from network (not just localhost)
+- **No Hibernation**: Disabled to prevent sleep
+- **App Nap Disabled**: Applications stay responsive
+
+To disable server mode:
+```bash
+~/disable_sleep_uninstall.sh
+```
 
 ### Core Development Environment
 - **Homebrew**: Package manager with 200+ pre-configured packages
@@ -186,7 +216,8 @@ Control installation behavior:
     "use_pyenv": true,
     "use_uv_package_manager": true,
     "custom_shell_prompt": true,
-    "install_dutis": true
+    "install_dutis": true,
+    "enable_server_mode": true
   }
 }
 ```

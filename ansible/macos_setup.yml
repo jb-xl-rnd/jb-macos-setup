@@ -92,6 +92,12 @@
         feature_flags: "{{ llm_config.feature_flags }}"
       tags: [llm, llama-cpp, ai]
       
+    # Configure server mode (disable sleep permanently)
+    - name: Configure Mac for Server Mode
+      include_tasks: tasks/server_mode.yml
+      when: enable_server_mode | default(false)
+      tags: [server, nosleep, power]
+      
     # Final setup summary
     - name: Display setup completion message
       debug:
