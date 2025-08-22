@@ -57,6 +57,7 @@
     "use_uv_package_manager": true,
     "install_dutis": true,
     "dutis_auto_configure": true,
-    "use_kitty_pane_info": true
+    "use_kitty_pane_info": true,
+    "enable_server_mode": true
   }
 }

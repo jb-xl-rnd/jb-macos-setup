@@ -1,0 +1,90 @@
+{
+  "llm_settings": {
+    "enabled": true,
+    "install_dir": "~/llm-workspace",
+    "models_dir": "~/llm-workspace/models",
+    "logs_dir": "~/llm-workspace/logs",
+    "default_model": "gemma2-9b",
+    "server_port": 8080,
+    "server_host": "0.0.0.0",
+    "auto_start": true,
+    "metal_acceleration": true,
+    "context_size": 2048,
+    "batch_size": 512,
+    "n_gpu_layers": -1,
+    "n_threads": 4
+  },
+  "models": {
+    "tinyllama": {
+      "url": "https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+      "filename": "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf",
+      "size": "637MB",
+      "context_size": 2048,
+      "parameters": "1.1B",
+      "quantization": "Q4_K_M",
+      "description": "Lightweight model for basic tasks"
+    },
+    "gemma2-9b": {
+      "url": "https://huggingface.co/bartowski/gemma-2-9b-it-GGUF/resolve/main/gemma-2-9b-it-Q4_K_M.gguf",
+      "filename": "gemma-2-9b-it-Q4_K_M.gguf",
+      "size": "5.44GB",
+      "context_size": 8192,
+      "parameters": "9B",
+      "quantization": "Q4_K_M",
+      "description": "Google's Gemma 2 9B - excellent reasoning and instruction following"
+    },
+    "qwen2.5-7b": {
+      "url": "https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+      "filename": "Qwen2.5-7B-Instruct-Q4_K_M.gguf",
+      "size": "4.92GB",
+      "context_size": 32768,
+      "parameters": "7B",
+      "quantization": "Q4_K_M",
+      "description": "Alibaba's Qwen 2.5 - strong multilingual and coding abilities"
+    },
+    "qwen2.5-14b": {
+      "url": "https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "size": "8.7GB",
+      "context_size": 32768,
+      "parameters": "14B",
+      "quantization": "Q4_K_M",
+      "description": "Larger Qwen 2.5 - maximum capability for 16GB RAM"
+    },
+    "deepseek-coder-6.7b": {
+      "url": "https://huggingface.co/TheBloke/deepseek-coder-6.7B-instruct-GGUF/resolve/main/deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
+      "filename": "deepseek-coder-6.7b-instruct.Q4_K_M.gguf",
+      "size": "3.82GB",
+      "context_size": 16384,
+      "parameters": "6.7B",
+      "quantization": "Q4_K_M",
+      "description": "DeepSeek Coder - specialized for programming tasks"
+    },
+    "phi3-mini": {
+      "url": "https://huggingface.co/microsoft/Phi-3-mini-4k-instruct-gguf/resolve/main/Phi-3-mini-4k-instruct-q4.gguf",
+      "filename": "phi-3-mini-4k-instruct-q4.gguf",
+      "size": "~2.4GB",
+      "context_size": 4096,
+      "parameters": "3.8B",
+      "quantization": "Q4",
+      "description": "More capable reasoning model"
+    },
+    "gpt-oss-20b": {
+      "url": "https://huggingface.co/bartowski/openai_gpt-oss-20b-GGUF/resolve/main/openai_gpt-oss-20b-IQ3_M.gguf",
+      "filename": "openai_gpt-oss-20b-IQ3_M.gguf",
+      "size": "10.7GB",
+      "context_size": 8192,
+      "parameters": "20B",
+      "quantization": "IQ3_M",
+      "description": "OpenAI's new open-source GPT-Oss 20B model"
+    }
+  },
+  "feature_flags": {
+    "install_llama_cpp": true,
+    "download_models": true,
+    "setup_service": true,
+    "install_client_tools": true,
+    "download_default_model": true,
+    "download_all_models": false
+  }
+}

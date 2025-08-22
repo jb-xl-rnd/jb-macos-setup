@@ -1,0 +1,12 @@
+#!/bin/bash
+# Quick wrapper for LLM client
+
+SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+source "$SCRIPT_DIR/llm-venv/bin/activate" 2>/dev/null || {
+    echo "Creating virtual environment..."
+    uv venv "$SCRIPT_DIR/llm-venv"
+    source "$SCRIPT_DIR/llm-venv/bin/activate"
+    uv pip install requests
+}
+
+python "$SCRIPT_DIR/llm_client.py" "$@"

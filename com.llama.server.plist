@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.llama.server</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>/Users/dev/llm-workspace/llama.cpp/build/bin/llama-server</string>
+        <string>-m</string>
+        <string>/Users/dev/llm-workspace/models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf</string>
+        <string>--host</string>
+        <string>0.0.0.0</string>
+        <string>--port</string>
+        <string>8080</string>
+        <string>-ngl</string>
+        <string>-1</string>
+        <string>--ctx-size</string>
+        <string>2048</string>
+        <string>--parallel</string>
+        <string>4</string>
+        <string>--cont-batching</string>
+        <string>--flash-attn</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>/Users/dev/llm-workspace</string>
+    
+    <key>StandardOutPath</key>
+    <string>/Users/dev/llm-workspace/logs/llama-server.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>/Users/dev/llm-workspace/logs/llama-server.error.log</string>
+    
+    <key>RunAtLoad</key>
+    <true/>
+    
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>

@@ -6,6 +6,7 @@
     - "../config/packages.json"
     - "../config/config.json"
     - "../config/shell_config.json"
+    - "../config/llm_config.json"
     
   vars:
     python_version: "3.11.8"  # Specify the Python version you want to use
@@ -16,6 +17,7 @@
     use_kitty_pane_info: "{{ feature_flags.use_kitty_pane_info | default(false) }}"
     install_dutis: "{{ feature_flags.install_dutis | default(true) }}"
     dutis_auto_configure: "{{ feature_flags.dutis_auto_configure | default(true) }}"
+    install_llama_cpp: "{{ llm_config.feature_flags.install_llama_cpp | default(false) }}"
 
   pre_tasks:
     - name: Install required Ansible collections
@@ -79,11 +81,22 @@
     - name: Install Pinta (Intel workaround)
       include_tasks: tasks/pinta.yml
       tags: [pinta, apps, workaround]
+    
+    # Include LLama.cpp setup
+    - name: Setup LLama.cpp and local LLM
+      include_tasks: tasks/llama_cpp.yml
+      when: install_llama_cpp
+      vars:
+        llm_settings: "{{ llm_config.llm_settings }}"
+        models: "{{ llm_config.models }}"
+        feature_flags: "{{ llm_config.feature_flags }}"
+      tags: [llm, llama-cpp, ai]
       
-    # Include yabai window manager configuration
-    - name: Configure yabai window manager
-      include_tasks: tasks/yabai.yml
-      tags: [yabai, wm, window-manager]
+    # Configure server mode (disable sleep permanently)
+    - name: Configure Mac for Server Mode
+      include_tasks: tasks/server_mode.yml
+      when: enable_server_mode | default(false)
+      tags: [server, nosleep, power]
       
     # Final setup summary
     - name: Display setup completion message
@@ -94,21 +107,6 @@
           ============================================================
           
           ✅ All packages and applications have been installed.
-          
-          ⚠️  IMPORTANT MANUAL STEPS:
-          
-          1. YABAI WINDOW MANAGER:
-             - Grant accessibility permissions to yabai and skhd
-             - System Settings > Privacy & Security > Accessibility
-             - Add: /opt/homebrew/bin/yabai and /opt/homebrew/bin/skhd
-             
-          2. RECTANGLE HAS BEEN REMOVED:
-             - Yabai replaces Rectangle's functionality
-             - See YABAI_SHORTCUTS.md for keyboard shortcuts
-             
-          3. START SERVICES:
-             yabai --start-service
-             skhd --start-service
           
           ============================================================
       tags: [always]

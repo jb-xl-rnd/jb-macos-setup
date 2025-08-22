@@ -1,0 +1,161 @@
+---
+# Task to configure Mac for server mode (no sleep)
+
+- name: Configure Mac for Server Mode
+  block:
+    - name: Check if running as server
+      set_fact:
+        is_server: "{{ enable_server_mode | default(false) }}"
+
+    - name: Display server mode configuration
+      debug:
+        msg: "Configuring Mac for server mode - system will never sleep"
+      when: is_server
+
+    - name: Disable all sleep settings
+      become: yes
+      shell: |
+        pmset -a sleep 0
+        pmset -a disksleep 0
+        pmset -a displaysleep 0
+        pmset -a powernap 0
+        pmset -a autorestart 1
+        pmset -a womp 1
+        pmset -a standby 0
+        pmset -a standbydelay 0
+        pmset -a autopoweroff 0
+        pmset -a hibernatemode 0
+        pmset -a acwake 1
+        pmset -a lidwake 1
+        pmset -a ttyskeepawake 1
+      when: is_server
+
+    - name: Disable App Nap system-wide
+      shell: defaults write NSGlobalDomain NSAppSleepDisabled -bool YES
+      when: is_server
+
+    - name: Set system to never sleep via systemsetup
+      become: yes
+      shell: |
+        systemsetup -setcomputersleep Never
+        systemsetup -setdisplaysleep Never
+        systemsetup -setharddisksleep Never
+      when: is_server
+      ignore_errors: yes
+
+    - name: Remove hibernation file
+      become: yes
+      file:
+        path: /var/vm/sleepimage
+        state: absent
+      when: is_server
+
+    - name: Create placeholder to prevent sleep image
+      become: yes
+      file:
+        path: /var/vm/sleepimage
+        state: directory
+        mode: '0000'
+      when: is_server
+
+    - name: Create LaunchDaemon for caffeinate
+      become: yes
+      copy:
+        content: |
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>Label</key>
+              <string>com.server.nosleep</string>
+              <key>ProgramArguments</key>
+              <array>
+                  <string>/usr/bin/caffeinate</string>
+                  <string>-dims</string>
+              </array>
+              <key>RunAtLoad</key>
+              <true/>
+              <key>KeepAlive</key>
+              <true/>
+              <key>StandardErrorPath</key>
+              <string>/var/log/nosleep.err</string>
+              <key>StandardOutPath</key>
+              <string>/var/log/nosleep.out</string>
+          </dict>
+          </plist>
+        dest: /Library/LaunchDaemons/com.server.nosleep.plist
+        owner: root
+        group: wheel
+        mode: '0644'
+      when: is_server
+
+    - name: Load LaunchDaemon
+      become: yes
+      shell: launchctl load -w /Library/LaunchDaemons/com.server.nosleep.plist
+      when: is_server
+      ignore_errors: yes
+
+    - name: Check if LaunchDaemon is running
+      shell: launchctl list | grep com.server.nosleep
+      register: daemon_status
+      when: is_server
+      ignore_errors: yes
+
+    - name: Display daemon status
+      debug:
+        msg: "NoSleep daemon status: {{ daemon_status.stdout }}"
+      when: is_server and daemon_status.stdout is defined
+
+    - name: Create uninstall script
+      copy:
+        content: |
+          #!/bin/bash
+          echo "=== Restoring Default Sleep Settings ==="
+          
+          # Unload LaunchDaemon
+          sudo launchctl unload -w /Library/LaunchDaemons/com.server.nosleep.plist
+          sudo rm -f /Library/LaunchDaemons/com.server.nosleep.plist
+          
+          # Restore default sleep settings
+          sudo pmset -a sleep 10
+          sudo pmset -a disksleep 10
+          sudo pmset -a displaysleep 10
+          sudo pmset -a powernap 1
+          sudo pmset -a autorestart 0
+          sudo pmset -a womp 1
+          sudo pmset -a standby 1
+          sudo pmset -a autopoweroff 1
+          sudo pmset -a hibernatemode 3
+          
+          # Re-enable App Nap
+          defaults write NSGlobalDomain NSAppSleepDisabled -bool NO
+          
+          echo "Default sleep settings restored!"
+          pmset -g
+        dest: ~/disable_sleep_uninstall.sh
+        mode: '0755'
+      when: is_server
+
+    - name: Display current power settings
+      shell: pmset -g
+      register: power_settings
+      when: is_server
+
+    - name: Show power configuration
+      debug:
+        msg: "{{ power_settings.stdout_lines }}"
+      when: is_server
+
+    - name: Success message
+      debug:
+        msg: |
+          Server mode enabled successfully!
+          - System will never sleep
+          - Network wake enabled
+          - Caffeinate daemon running
+          - To disable: run ~/disable_sleep_uninstall.sh
+      when: is_server
+  tags:
+    - server
+    - nosleep
+    - power

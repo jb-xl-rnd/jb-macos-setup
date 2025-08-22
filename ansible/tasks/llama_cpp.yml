@@ -1,0 +1,188 @@
+---
+- name: LLama.cpp Installation and Configuration
+  block:
+    - name: Display LLM setup information
+      debug:
+        msg: |
+          ============================================================
+          INSTALLING LLAMA.CPP AND LOCAL LLM
+          ============================================================
+          This will set up a local LLM server on your machine.
+          Installation directory: {{ llm_settings.install_dir }}
+          Server will run on: {{ llm_settings.server_host }}:{{ llm_settings.server_port }}
+          ============================================================
+
+    - name: Create LLM workspace directories
+      file:
+        path: "{{ ansible_env.HOME }}/{{ item }}"
+        state: directory
+        mode: '0755'
+      loop:
+        - "llm-workspace"
+        - "llm-workspace/models"
+        - "llm-workspace/logs"
+
+    - name: Check if llama.cpp is already cloned
+      stat:
+        path: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp/.git"
+      register: llama_cpp_repo
+
+    - name: Clone llama.cpp repository
+      git:
+        repo: https://github.com/ggerganov/llama.cpp.git
+        dest: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp"
+        version: master
+        force: no
+      when: not llama_cpp_repo.stat.exists
+
+    - name: Update llama.cpp repository
+      git:
+        repo: https://github.com/ggerganov/llama.cpp.git
+        dest: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp"
+        version: master
+        update: yes
+      when: llama_cpp_repo.stat.exists
+
+    - name: Check if llama.cpp is already built
+      stat:
+        path: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp/build/bin/llama-cli"
+      register: llama_built
+
+    - name: Build llama.cpp with Metal support
+      shell: |
+        cd {{ ansible_env.HOME }}/llm-workspace/llama.cpp
+        rm -rf build
+        mkdir -p build && cd build
+        cmake .. -DLLAMA_METAL=ON -DCMAKE_BUILD_TYPE=Release
+        cmake --build . --config Release -j$(sysctl -n hw.ncpu)
+      args:
+        creates: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp/build/bin/llama-cli"
+      when: not llama_built.stat.exists or llama_cpp_repo.stat.exists
+
+    - name: Set default model
+      set_fact:
+        default_model_name: "{{ llm_settings.default_model }}"
+        
+    - name: Check if default model exists
+      stat:
+        path: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models[default_model_name].filename }}"
+      register: model_exists
+      when: feature_flags.download_default_model
+
+    - name: Download default model ({{ default_model_name }})
+      get_url:
+        url: "{{ models[default_model_name].url }}"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models[default_model_name].filename }}"
+        mode: '0644'
+        timeout: 600
+      when: 
+        - feature_flags.download_default_model
+        - not model_exists.stat.exists
+        
+    - name: Create model management script
+      copy:
+        src: "{{ playbook_dir }}/../scripts/manage_models.sh"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/manage_models.sh"
+        mode: '0755'
+        
+    - name: Copy LLM configuration
+      copy:
+        src: "{{ playbook_dir }}/../config/llm_config.json"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/llm_config.json"
+        mode: '0644'
+        
+    - name: Create server startup script
+      template:
+        src: start_server.sh.j2
+        dest: "{{ ansible_env.HOME }}/llm-workspace/start_server.sh"
+        mode: '0755'
+
+    - name: Create virtual environment for LLM client
+      shell: |
+        cd {{ ansible_env.HOME }}/llm-workspace
+        {{ ansible_env.HOME }}/.local/bin/uv venv llm-venv || true
+      args:
+        creates: "{{ ansible_env.HOME }}/llm-workspace/llm-venv"
+      when: use_uv
+
+    - name: Install Python client dependencies with uv
+      shell: |
+        cd {{ ansible_env.HOME }}/llm-workspace
+        source llm-venv/bin/activate
+        {{ ansible_env.HOME }}/.local/bin/uv pip install requests
+      when: use_uv
+
+    - name: Deploy LLM management scripts
+      template:
+        src: "{{ item.src }}"
+        dest: "{{ item.dest }}"
+        mode: "{{ item.mode }}"
+      loop:
+        - { src: "llm_manager.sh.j2", dest: "{{ ansible_env.HOME }}/.local/bin/llm-manager", mode: "0755" }
+        - { src: "llm_client.py.j2", dest: "{{ ansible_env.HOME }}/.local/bin/llm-client", mode: "0755" }
+        - { src: "llm_wrapper.sh.j2", dest: "{{ ansible_env.HOME }}/.local/bin/llm", mode: "0755" }
+      when: feature_flags.install_client_tools
+
+    - name: Check if launchd service exists
+      stat:
+        path: "{{ ansible_env.HOME }}/Library/LaunchAgents/com.llama.server.plist"
+      register: service_exists
+
+    - name: Unload existing LLM server service if present
+      command: launchctl unload {{ ansible_env.HOME }}/Library/LaunchAgents/com.llama.server.plist
+      when: service_exists.stat.exists
+      ignore_errors: yes
+
+    - name: Setup launchd service for LLM server
+      template:
+        src: com.llama.server.plist.j2
+        dest: "{{ ansible_env.HOME }}/Library/LaunchAgents/com.llama.server.plist"
+        mode: '0644'
+      when: feature_flags.setup_service
+
+    - name: Load LLM server service
+      command: launchctl load -w {{ ansible_env.HOME }}/Library/LaunchAgents/com.llama.server.plist
+      when: 
+        - feature_flags.setup_service
+        - llm_settings.auto_start
+
+    - name: Wait for server to start
+      wait_for:
+        port: "{{ llm_settings.server_port }}"
+        host: "{{ llm_settings.server_host }}"
+        delay: 3
+        timeout: 30
+      when: 
+        - feature_flags.setup_service
+        - llm_settings.auto_start
+
+    - name: Test LLM server health
+      uri:
+        url: "http://{{ llm_settings.server_host }}:{{ llm_settings.server_port }}/health"
+        method: GET
+        status_code: 200
+      register: health_check
+      when: 
+        - feature_flags.setup_service
+        - llm_settings.auto_start
+
+    - name: Display setup completion
+      debug:
+        msg: |
+          ============================================================
+          LLAMA.CPP SETUP COMPLETE!
+          ============================================================
+          
+          ✅ llama.cpp has been built with Metal acceleration
+          ✅ Model downloaded: {{ models.tinyllama.filename }}
+          ✅ Server running at: http://{{ llm_settings.server_host }}:{{ llm_settings.server_port }}
+          
+          Quick commands:
+            llm --help                    # Show help
+            llm --prompt "Your question"  # Ask a question
+            llm --interactive            # Interactive chat
+            llm-manager list             # List models
+            llm-manager server start     # Start server manually
+          
+          ============================================================
+      when: health_check is succeeded

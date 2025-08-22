@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>Label</key>
+    <string>com.llama.server</string>
+    
+    <key>ProgramArguments</key>
+    <array>
+        <string>{{ ansible_env.HOME }}/llm-workspace/llama.cpp/build/bin/llama-server</string>
+        <string>-m</string>
+        <string>{{ ansible_env.HOME }}/llm-workspace/models/{{ models.tinyllama.filename }}</string>
+        <string>--host</string>
+        <string>{{ llm_settings.server_host }}</string>
+        <string>--port</string>
+        <string>{{ llm_settings.server_port | string }}</string>
+        <string>-ngl</string>
+        <string>{{ llm_settings.n_gpu_layers | string }}</string>
+        <string>--ctx-size</string>
+        <string>{{ llm_settings.context_size | string }}</string>
+        <string>--parallel</string>
+        <string>4</string>
+        <string>--cont-batching</string>
+        <string>--flash-attn</string>
+    </array>
+    
+    <key>WorkingDirectory</key>
+    <string>{{ ansible_env.HOME }}/llm-workspace</string>
+    
+    <key>StandardOutPath</key>
+    <string>{{ ansible_env.HOME }}/llm-workspace/logs/llama-server.log</string>
+    
+    <key>StandardErrorPath</key>
+    <string>{{ ansible_env.HOME }}/llm-workspace/logs/llama-server.error.log</string>
+    
+    <key>RunAtLoad</key>
+    <{{ llm_settings.auto_start | lower }}/>
+    
+    <key>KeepAlive</key>
+    <dict>
+        <key>SuccessfulExit</key>
+        <false/>
+        <key>Crashed</key>
+        <true/>
+    </dict>
+    
+    <key>ThrottleInterval</key>
+    <integer>30</integer>
+    
+    <key>EnvironmentVariables</key>
+    <dict>
+        <key>PATH</key>
+        <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+    </dict>
+</dict>
+</plist>
