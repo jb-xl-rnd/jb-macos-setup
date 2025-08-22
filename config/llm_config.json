@@ -4,7 +4,7 @@
     "install_dir": "~/llm-workspace",
     "models_dir": "~/llm-workspace/models",
     "logs_dir": "~/llm-workspace/logs",
-    "default_model": "qwen2.5-7b",
+    "default_model": "gemma2-9b",
     "server_port": 8080,
     "server_host": "0.0.0.0",
     "auto_start": true,
@@ -43,8 +43,8 @@
       "description": "Alibaba's Qwen 2.5 - strong multilingual and coding abilities"
     },
     "qwen2.5-14b": {
-      "url": "https://huggingface.co/Qwen/Qwen2.5-14B-Instruct-GGUF/resolve/main/qwen2.5-14b-instruct-q4_k_m.gguf",
-      "filename": "qwen2.5-14b-instruct-q4_k_m.gguf",
+      "url": "https://huggingface.co/bartowski/Qwen2.5-14B-Instruct-GGUF/resolve/main/Qwen2.5-14B-Instruct-Q4_K_M.gguf",
+      "filename": "Qwen2.5-14B-Instruct-Q4_K_M.gguf",
       "size": "8.7GB",
       "context_size": 32768,
       "parameters": "14B",
@@ -68,6 +68,15 @@
       "parameters": "3.8B",
       "quantization": "Q4",
       "description": "More capable reasoning model"
+    },
+    "gpt-oss-20b": {
+      "url": "https://huggingface.co/bartowski/openai_gpt-oss-20b-GGUF/resolve/main/openai_gpt-oss-20b-IQ3_M.gguf",
+      "filename": "openai_gpt-oss-20b-IQ3_M.gguf",
+      "size": "10.7GB",
+      "context_size": 8192,
+      "parameters": "20B",
+      "quantization": "IQ3_M",
+      "description": "OpenAI's new open-source GPT-Oss 20B model"
     }
   },
   "feature_flags": {
