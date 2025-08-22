@@ -45,12 +45,12 @@ cd build
 cmake .. -DLLAMA_METAL=ON -DCMAKE_BUILD_TYPE=Release
 cmake --build . --config Release -j$(sysctl -n hw.ncpu)
 
-echo "=== Step 5: Downloading TinyLlama model ==="
+echo "=== Step 5: Downloading Qwen 2.5 7B model ==="
 cd ~/llm-workspace/models
-if [ ! -f "tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf" ]; then
-    echo "Downloading model (637MB)..."
-    curl -L -o tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
-        https://huggingface.co/TheBloke/TinyLlama-1.1B-Chat-v1.0-GGUF/resolve/main/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf
+if [ ! -f "Qwen2.5-7B-Instruct-Q4_K_M.gguf" ]; then
+    echo "Downloading Qwen 2.5 7B model (4.92GB - this will take a while)..."
+    curl -L -o Qwen2.5-7B-Instruct-Q4_K_M.gguf \
+        https://huggingface.co/bartowski/Qwen2.5-7B-Instruct-GGUF/resolve/main/Qwen2.5-7B-Instruct-Q4_K_M.gguf
 else
     echo "Model already downloaded"
 fi
@@ -60,11 +60,11 @@ cat > ~/llm-workspace/start_server.sh << 'SCRIPT'
 #!/bin/bash
 cd ~/llm-workspace
 ./llama.cpp/build/bin/llama-server \
-    -m models/tinyllama-1.1b-chat-v1.0.Q4_K_M.gguf \
-    --host 127.0.0.1 \
+    -m models/Qwen2.5-7B-Instruct-Q4_K_M.gguf \
+    --host 0.0.0.0 \
     --port 8080 \
     -ngl -1 \
-    --ctx-size 2048 \
+    --ctx-size 32768 \
     --parallel 4 \
     --cont-batching \
     --flash-attn \
@@ -72,7 +72,8 @@ cd ~/llm-workspace
 
 echo $! > logs/server.pid
 echo "Server started with PID $(cat logs/server.pid)"
-echo "Access at: http://127.0.0.1:8080"
+echo "Model: Qwen 2.5 7B"
+echo "Access at: http://0.0.0.0:8080"
 SCRIPT
 chmod +x ~/llm-workspace/start_server.sh
 

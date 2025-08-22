@@ -1,0 +1,17 @@
+#!/bin/bash
+cd {{ ansible_env.HOME }}/llm-workspace
+./llama.cpp/build/bin/llama-server \
+    -m models/{{ models[llm_settings.default_model].filename }} \
+    --host {{ llm_settings.server_host }} \
+    --port {{ llm_settings.server_port }} \
+    -ngl -1 \
+    --ctx-size {{ models[llm_settings.default_model].context_size | default(llm_settings.context_size) }} \
+    --parallel 4 \
+    --cont-batching \
+    --flash-attn \
+    > logs/server.log 2>&1 &
+
+echo $! > logs/server.pid
+echo "Server started with PID $(cat logs/server.pid)"
+echo "Model: {{ llm_settings.default_model }} ({{ models[llm_settings.default_model].parameters }})"
+echo "Access at: http://{{ llm_settings.server_host }}:{{ llm_settings.server_port }}"

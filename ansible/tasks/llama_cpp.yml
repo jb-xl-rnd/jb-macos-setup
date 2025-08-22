@@ -59,21 +59,43 @@
         creates: "{{ ansible_env.HOME }}/llm-workspace/llama.cpp/build/bin/llama-cli"
       when: not llama_built.stat.exists or llama_cpp_repo.stat.exists
 
+    - name: Set default model
+      set_fact:
+        default_model_name: "{{ llm_settings.default_model }}"
+        
     - name: Check if default model exists
       stat:
-        path: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models.tinyllama.filename }}"
+        path: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models[default_model_name].filename }}"
       register: model_exists
-      when: feature_flags.download_models
+      when: feature_flags.download_default_model
 
-    - name: Download default model (TinyLlama)
+    - name: Download default model ({{ default_model_name }})
       get_url:
-        url: "{{ models.tinyllama.url }}"
-        dest: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models.tinyllama.filename }}"
+        url: "{{ models[default_model_name].url }}"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/models/{{ models[default_model_name].filename }}"
         mode: '0644'
-        timeout: 300
+        timeout: 600
       when: 
-        - feature_flags.download_models
+        - feature_flags.download_default_model
         - not model_exists.stat.exists
+        
+    - name: Create model management script
+      copy:
+        src: "{{ playbook_dir }}/../scripts/manage_models.sh"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/manage_models.sh"
+        mode: '0755'
+        
+    - name: Copy LLM configuration
+      copy:
+        src: "{{ playbook_dir }}/../config/llm_config.json"
+        dest: "{{ ansible_env.HOME }}/llm-workspace/llm_config.json"
+        mode: '0644'
+        
+    - name: Create server startup script
+      template:
+        src: start_server.sh.j2
+        dest: "{{ ansible_env.HOME }}/llm-workspace/start_server.sh"
+        mode: '0755'
 
     - name: Create virtual environment for LLM client
       shell: |
