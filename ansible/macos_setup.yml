@@ -52,6 +52,11 @@
       import_tasks: tasks/packages.yml
       tags: [packages, brew, apps]
       
+    # Include npm package installation tasks
+    - name: Install npm packages
+      import_tasks: tasks/npm_packages.yml
+      tags: [packages, npm, node]
+      
     # Include Python environment setup
     - name: Configure Python environment
       include_tasks: tasks/python_env.yml

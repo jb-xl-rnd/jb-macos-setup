@@ -234,6 +234,7 @@
     {"name": "zstd", "description": "Zstandard is a real-time compression algorithm"}
   ],
   "brew_cask_apps": [
+    {"name": "nikitabobko/tap/aerospace", "description": "Tiling window manager for macOS"},
     {"name": "autodesk-fusion", "description": "Integrated CAD, CAM, CAE, and PCB software"},
     {"name": "autodesk-fusion360", "description": "Integrated CAD, CAM, CAE, and PCB software"},
     {"name": "balenaetcher", "description": "Tool to flash OS images to SD cards & USB drives"},
@@ -328,7 +329,9 @@
       "description": "IDE for macOS and iOS development"
     }
   ],
-  "brew_taps": [],
+  "brew_taps": [
+    {"name": "nikitabobko/tap", "description": "Tap for AeroSpace tiling window manager"}
+  ],
   "brew_tap_packages": [],
   "pip_packages": [
     "certifi",
@@ -336,5 +339,12 @@
     "cryptography",
     "pycparser",
     "wheel"
+  ],
+  "npm_packages": [
+    {
+      "name": "ccusage",
+      "description": "Claude Code usage tracker - shows API usage and costs for Claude Code",
+      "global": true
+    }
   ]
 }

@@ -1,0 +1,34 @@
+---
+# Ansible task file for npm package installation
+
+- name: Check if npm is installed
+  command: which npm
+  register: npm_check
+  changed_when: false
+  failed_when: false
+
+- name: Install Node.js via Homebrew if npm not found
+  community.general.homebrew:
+    name: node
+    state: present
+  when: npm_check.rc != 0
+
+- name: Install global npm packages
+  npm:
+    name: "{{ item.name }}"
+    global: "{{ item.global | default(true) }}"
+    state: present
+  loop: "{{ npm_packages | default([]) }}"
+  when: npm_packages is defined and npm_packages | length > 0
+  register: npm_result
+  ignore_errors: yes
+
+- name: Debug failed npm installations
+  debug:
+    msg: "Failed to install {{ item.item.name }}: {{ item.msg | default('Unknown error') }}"
+  loop: "{{ npm_result.results | default([]) }}"
+  when: 
+    - npm_result is defined
+    - item.failed | default(false)
+  loop_control:
+    label: "{{ item.item.name | default('unknown') }}"
