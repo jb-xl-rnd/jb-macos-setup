@@ -87,8 +87,8 @@ print_style "=== Installation Complete ===" "success"
 print_style "System sleep prevention has been lifted" "info"
 
 # Test the installation
-if [ -f "./test_llm_setup.sh" ]; then
+if [ -f "./installers/llm/test_llm_setup.sh" ]; then
     print_style "Running installation tests..." "info"
-    chmod +x ./test_llm_setup.sh
-    ./test_llm_setup.sh
+    chmod +x ./installers/llm/test_llm_setup.sh
+    ./installers/llm/test_llm_setup.sh
 fi

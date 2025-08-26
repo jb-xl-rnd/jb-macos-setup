@@ -4,7 +4,7 @@
 set -e
 
 # Configuration
-CONFIG_FILE="$(dirname "$0")/../config/llm_config.json"
+CONFIG_FILE="$(dirname "$0")/../../config/llm_config.json"
 MODELS_DIR="$HOME/llm-workspace/models"
 SERVER_SCRIPT="$HOME/llm-workspace/start_server.sh"
 

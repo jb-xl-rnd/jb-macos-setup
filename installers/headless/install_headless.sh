@@ -162,10 +162,10 @@ test_installation() {
     fi
     
     # Test LLM setup if test script exists
-    if [ -f "./test_llm_setup.sh" ]; then
+    if [ -f "./installers/llm/test_llm_setup.sh" ]; then
         print_style "Running LLM setup test..." "info"
-        chmod +x ./test_llm_setup.sh
-        ./test_llm_setup.sh
+        chmod +x ./installers/llm/test_llm_setup.sh
+        ./installers/llm/test_llm_setup.sh
     fi
     
     print_style "Testing completed" "success"

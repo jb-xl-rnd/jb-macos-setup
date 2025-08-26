@@ -39,17 +39,17 @@ execute_option() {
     case $1 in
         1)
             print_style "Running Initial Setup..." "info"
-            ./scripts/setupInitialMacOS.sh
+            ./scripts/system/setupInitialMacOS.sh
             ;;
         2)
             print_style "Installing Ansible..." "info"
-            ./scripts/setupAnsible.sh
+            ./scripts/testing/setupAnsible.sh
             ;;
         3)
             print_style "Running Ansible Playbook..." "info"
             if ! command -v ansible-playbook &> /dev/null; then
                 print_style "Ansible not found. Installing first..." "warning"
-                ./scripts/setupAnsible.sh
+                ./scripts/testing/setupAnsible.sh
             fi
             ansible-playbook ./ansible/macos_setup.yml
             ;;
@@ -110,7 +110,7 @@ execute_option() {
 }
 
 # Make scripts executable
-chmod +x ./scripts/*.sh
+chmod +x ./scripts/*/*.sh
 
 # Create config dir if it doesn't exist
 if [ ! -d "./config" ]; then

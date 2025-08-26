@@ -1,1 +1,18 @@
 **/.claude/settings.local.json
+
+# Generated build files
+build/
+
+# Python cache
+*.pyc
+__pycache__/
+*.pyo
+*.pyd
+.Python
+venv/
+.venv/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride

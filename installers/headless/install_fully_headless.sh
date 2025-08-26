@@ -117,8 +117,8 @@ echo "=== Installation Complete ==="
 INSTALL_SCRIPT
 
 print_style "=== Testing LLM Setup ===" "info"
-if [ -f "./test_llm_setup.sh" ]; then
-    ./test_llm_setup.sh
+if [ -f "./installers/llm/test_llm_setup.sh" ]; then
+    ./installers/llm/test_llm_setup.sh
 fi
 
 print_style "=== Fully Headless Installation Complete ===" "success"

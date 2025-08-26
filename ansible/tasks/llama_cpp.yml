@@ -81,7 +81,7 @@
         
     - name: Create model management script
       copy:
-        src: "{{ playbook_dir }}/../scripts/manage_models.sh"
+        src: "{{ playbook_dir }}/../scripts/llm/manage_models.sh"
         dest: "{{ ansible_env.HOME }}/llm-workspace/manage_models.sh"
         mode: '0755'
         

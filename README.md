@@ -22,41 +22,72 @@ This project provides multiple installation approaches for setting up a macOS ma
 ### Headless Installation (For Remote/Automated Setup)
 ```bash
 # Complete setup without GUI interactions
-./install_headless.sh --all
+./installers/headless/install_headless.sh --all
 
 # Just install LLM components
-./install_headless.sh --llm
+./installers/headless/install_headless.sh --llm
 
 # Run with sleep prevention
-./install_nosleep.sh
+./installers/headless/install_nosleep.sh
 ```
 
 ### Direct LLM Installation
 ```bash
 # Quick LLM setup bypassing ansible
-./direct_llm_install.sh
+./installers/llm/direct_llm_install.sh
 ```
 
 ## Directory Structure
 
 ```
 MacOS/
-├── ansible/                  # Ansible playbooks and templates
-│   ├── macos_setup.yml      # Main playbook
-│   ├── tasks/               # Individual task modules
-│   └── templates/           # Jinja2 templates
+├── README.md                # Main documentation
+├── install.sh               # Interactive setup menu
+├── CLAUDE.md               # AI assistant instructions
+├── ansible/                 # Ansible playbooks and templates
+│   ├── macos_setup.yml     # Main playbook
+│   ├── tasks/              # Individual task modules
+│   └── templates/          # Jinja2 templates
 ├── config/                  # Configuration files
-│   ├── packages.json        # Package definitions
-│   ├── shell_config.json   # Shell configurations
-│   ├── config.json         # Feature flags
-│   └── llm_config.json     # LLM settings
-├── scripts/                 # Setup scripts
-│   ├── setupInitialMacOS.sh # Initial environment setup
-│   ├── setupAnsible.sh      # Ansible installation
-│   ├── prevent_sleep.sh    # Sleep prevention utility
-│   └── setup_permissions.sh # Permission configuration
-├── docs/                    # Documentation
-└── install*.sh             # Various installers
+│   ├── packages.json       # Package definitions
+│   ├── shell_config.json  # Shell configurations
+│   ├── config.json        # Feature flags
+│   └── llm_config.json    # LLM settings
+├── installers/              # Installation scripts
+│   ├── headless/           # Automated installation
+│   │   ├── install_headless.sh
+│   │   ├── install_fully_headless.sh
+│   │   └── install_nosleep.sh
+│   ├── llm/                # LLM-specific installers
+│   │   ├── direct_llm_install.sh
+│   │   ├── install_llama.sh
+│   │   ├── setup_llama_mini.sh
+│   │   └── test_llm_setup.sh
+│   └── specialized/        # Specialized installers
+│       ├── install_server.sh
+│       └── install_with_sudo.sh
+├── scripts/                 # Utility scripts
+│   ├── llm/                # LLM management
+│   │   ├── llm_manager.sh  # LLM server management
+│   │   └── manage_models.sh # Model download/management
+│   ├── system/             # System configuration
+│   │   ├── setupInitialMacOS.sh # Initial environment
+│   │   ├── prevent_sleep.sh    # Sleep prevention
+│   │   └── setup_permissions.sh # Permissions
+│   ├── tools/              # Tool installation
+│   │   └── installDutis.sh # Default app manager
+│   └── testing/            # Setup verification
+│       ├── setupAnsible.sh # Ansible installation
+│       └── test-ansible.sh # Ansible testing
+├── build/                   # Generated files (gitignored)
+│   ├── llm                 # LLM wrapper script
+│   ├── llm_client.py      # Python LLM client
+│   └── com.llama.server.plist # LaunchAgent plist
+└── docs/                    # Documentation
+    ├── AEROSPACE_CHEATSHEET.md
+    ├── LLM_INTEGRATION_PLAN.md
+    ├── PintaInstallationWorkaround.md
+    └── SetupNTFSSupportMacOS.md
 ```
 
 ## Installation Methods
@@ -66,7 +97,7 @@ MacOS/
 For dedicated Mac Mini servers that should never sleep:
 
 ```bash
-./install_server.sh
+./installers/specialized/install_server.sh
 ```
 
 This configures:
@@ -80,7 +111,7 @@ This configures:
 
 ```bash
 # Install Ansible
-./scripts/setupAnsible.sh
+./scripts/testing/setupAnsible.sh
 
 # Run complete setup
 ansible-playbook ./ansible/macos_setup.yml
@@ -97,13 +128,13 @@ Perfect for remote machines or CI/CD:
 
 ```bash
 # Full headless installation with all components
-./install_headless.sh --all
+./installers/headless/install_headless.sh --all
 
 # Individual components
-./install_headless.sh --initial      # Homebrew and basics
-./install_headless.sh --ansible      # Run ansible playbook
-./install_headless.sh --llm          # LLM setup only
-./install_headless.sh --test         # Test installation
+./installers/headless/install_headless.sh --initial      # Homebrew and basics
+./installers/headless/install_headless.sh --ansible      # Run ansible playbook
+./installers/headless/install_headless.sh --llm          # LLM setup only
+./installers/headless/install_headless.sh --test         # Test installation
 ```
 
 ### 3. Direct Component Installation
@@ -112,12 +143,12 @@ For when you need specific functionality without the full setup:
 
 ```bash
 # Direct LLM installation (fastest)
-./direct_llm_install.sh
+./installers/llm/direct_llm_install.sh
 
 # Sleep prevention during long operations
-./scripts/prevent_sleep.sh start
+./scripts/system/prevent_sleep.sh start
 # ... run your installation ...
-./scripts/prevent_sleep.sh stop
+./scripts/system/prevent_sleep.sh stop
 ```
 
 ## Features
@@ -245,7 +276,7 @@ For completely unattended installation:
 
 Example for remote deployment:
 ```bash
-ssh user@mac-mini 'cd ~/macos-setup && ./install_headless.sh --all'
+ssh user@mac-mini 'cd ~/macos-setup && ./installers/headless/install_headless.sh --all'
 ```
 
 ## Security Considerations
@@ -269,7 +300,7 @@ To manually restore security settings:
 
 ### Permission Popups During Installation
 - Use `install_fully_headless.sh` for unattended setup
-- Run `scripts/setup_permissions.sh` before installation
+- Run `scripts/system/setup_permissions.sh` before installation
 
 ### LLM Server Not Accessible
 - Check firewall settings
@@ -281,7 +312,7 @@ To manually restore security settings:
 Verify your installation:
 ```bash
 # Test everything
-./test_llm_setup.sh
+./installers/llm/test_llm_setup.sh
 
 # Test specific components
 ansible-playbook ansible/macos_setup.yml --check
