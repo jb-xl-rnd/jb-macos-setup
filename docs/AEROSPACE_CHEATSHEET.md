@@ -65,6 +65,15 @@ Enter service mode with `⌥ ⇧ ;` then use:
 | `↓` | Volume down | |
 | `⇧ ↓` | Mute (volume to 0) | |
 
+## AeroSpace Control
+
+### Enable/Disable Window Management
+| Hotkey | CLI Command | Action |
+|--------|-------------|--------|
+| `⌥ ⇧ Ctrl E` | `aerospace enable toggle` | Toggle AeroSpace on/off |
+| N/A | `aerospace enable off` | Disable window management |
+| N/A | `aerospace enable on` | Enable window management |
+
 ## Quick Reference
 
 ### Most Used Commands
@@ -74,6 +83,7 @@ Enter service mode with `⌥ ⇧ ;` then use:
 - **Move to workspace:** `⌥ ⇧` + number/letter
 - **Previous workspace:** `⌥ Tab`
 - **Service mode:** `⌥ ⇧ ;`
+- **Toggle AeroSpace:** `⌥ ⇧ Ctrl E`
 
 ### Workspace Layout
 - Numbers: 1-9 (typically for main work)
@@ -86,12 +96,17 @@ Enter service mode with `⌥ ⇧ ;` then use:
 3. **Wrap-around monitors:** Moving workspace to monitor wraps around
 4. **Service mode:** Access advanced features and configuration reload
 5. **Back-and-forth:** Quickly toggle between two workspaces with `⌥ Tab`
+6. **Disable temporarily:** Use `⌥ ⇧ Ctrl E` to toggle AeroSpace when needed
+7. **Reset messy layouts:** Use service mode `R` or CLI `aerospace flatten-workspace-tree`
+8. **Balance window sizes:** CLI `aerospace balance-sizes` equalizes all windows
 
 ## Configuration File
 - Config location: `~/.aerospace.toml`
 - Reload config: Enter service mode (`⌥ ⇧ ;`) then press `Esc`
 
 ## CLI Commands
+
+### Basic Commands
 ```bash
 # List all windows
 aerospace list-windows
@@ -107,9 +122,39 @@ aerospace move-node-to-workspace <name>
 
 # Toggle fullscreen
 aerospace fullscreen
+```
 
-# Balance window sizes
+### Layout Commands
+```bash
+# Balance window sizes (equalize proportions)
 aerospace balance-sizes
+
+# Flatten workspace (reset messy layout)
+aerospace flatten-workspace-tree
+
+# Join focused window with adjacent window
+aerospace join-with left|right|up|down
+
+# Set layout for current workspace
+aerospace layout tiles|accordion|horizontal|vertical
+```
+
+### Advanced Commands
+```bash
+# Reload configuration
+aerospace reload-config [--no-gui] [--dry-run]
+
+# Close all windows except current
+aerospace close-all-windows-but-current [--quit-if-last-window]
+
+# Minimize window (macOS native)
+aerospace macos-native-minimize [--window-id <id>]
+
+# Trigger key binding programmatically
+aerospace trigger-binding --mode <mode> <binding>
+
+# Enable/disable window management
+aerospace enable on|off|toggle [--fail-if-noop]
 ```
 
 ## Common Workflows
@@ -127,10 +172,17 @@ aerospace balance-sizes
 ### Quick Window Cleanup
 1. `⌥ ⇧ ;` - Enter service mode
 2. `Backspace` - Close all but current window
+3. Alternative: `aerospace close-all-windows-but-current`
 
 ### Reset Messy Layout
 1. `⌥ ⇧ ;` - Enter service mode  
 2. `R` - Flatten/reset the layout
+3. Alternative: `aerospace flatten-workspace-tree`
+
+### Temporarily Disable AeroSpace
+1. `⌥ ⇧ Ctrl E` - Toggle window management
+2. Useful when using full-screen apps or games
+3. Re-enable the same way or via CLI: `aerospace enable on`
 
 ---
 *Legend: `⌥` = Option/Alt, `⇧` = Shift, `⌘` = Command*
