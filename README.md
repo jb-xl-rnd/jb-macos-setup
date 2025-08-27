@@ -14,7 +14,17 @@ This project provides multiple installation approaches for setting up a macOS ma
 
 ## Quick Start
 
-### Interactive Installation (Recommended for Desktop)
+### 🌐 Web Installation (Recommended)
+```bash
+# Complete setup on fresh macOS machine
+curl -fsSL jonathanbeer.me/macos | bash
+
+# With specific options
+curl -fsSL jonathanbeer.me/macos | bash -s -- --llm
+curl -fsSL jonathanbeer.me/macos | bash -s -- --help
+```
+
+### Interactive Installation (Local Development)
 ```bash
 ./install.sh
 ```
@@ -321,6 +331,12 @@ llm --mode health
 
 ## Requirements
 
+### For Web Installation
+- Fresh macOS machine (any recent version)
+- Internet connection
+- Terminal access
+
+### For Local Development
 - macOS 14.0 or later (tested on Sequoia 15.5)
 - Admin (sudo) access
 - Internet connection for package downloads
