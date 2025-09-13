@@ -37,14 +37,14 @@
 ### Switch to Workspace
 | Hotkey | Action |
 |--------|--------|
-| `⌥ 1-9` | Switch to workspace 1-9 |
+| `⌘ 1-9` | Switch to workspace 1-9 |
 | `⌥ A-Z` | Switch to workspace A-Z (except H,J,K,L) |
 | `⌥ Tab` | Switch to previous workspace (back-and-forth) |
 
 ### Move Window to Workspace
 | Hotkey | Action |
 |--------|--------|
-| `⌥ ⇧ 1-9` | Move window to workspace 1-9 |
+| `⌘ ⇧ 1-9` | Move window to workspace 1-9 |
 | `⌥ ⇧ A-Z` | Move window to workspace A-Z (except H,J,K,L) |
 | `⌥ ⇧ Tab` | Move workspace to next monitor |
 
@@ -160,7 +160,7 @@ aerospace enable on|off|toggle [--fail-if-noop]
 ## Common Workflows
 
 ### Setting up a Development Environment
-1. `⌥ 1` - Go to workspace 1
+1. `⌘ 1` - Go to workspace 1
 2. Open terminal and editor
 3. `⌥ /` - Arrange in tiles
 4. `⌥ -` or `⌥ =` - Adjust sizes

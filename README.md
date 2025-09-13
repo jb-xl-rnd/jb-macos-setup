@@ -249,6 +249,28 @@ Define which packages to install:
 }
 ```
 
+### AeroSpace Tiling Window Manager Setup
+After installation, AeroSpace requires additional configuration:
+
+```bash
+# Copy the template configuration
+cp config/.aerospace.toml ~/.aerospace.toml
+
+# Start AeroSpace manually (first time)
+open /Applications/AeroSpace.app
+
+# Enable window management
+aerospace enable on
+```
+
+**Key Features:**
+- **Workspace switching**: `⌘ + 1-9` (fixed to avoid macOS conflicts)
+- **Window movement**: `⌥ + H/J/K/L` (focus), `⌥ + Shift + H/J/K/L` (move)
+- **Toggle**: `⌥ + Shift + Ctrl + E` or `~/SHORTHAND-COMMANDS/TOGGLE_AEROSPACE`
+- **Auto-start**: Configured with `start-at-login = true` in template
+
+See `docs/AEROSPACE_CHEATSHEET.md` for complete keybinding reference.
+
 ### Feature Flags (`config/config.json`)
 Control installation behavior:
 ```json
