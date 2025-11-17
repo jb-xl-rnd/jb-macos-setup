@@ -224,6 +224,69 @@ Consider:
 
 ---
 
+## 2025-11-17 - AI Tools Cleanup
+
+### Summary
+- Removed experimental AI coding assistants
+- Kept only official AI tools (Claude Code, OpenAI Codex, Gemini)
+- Freed disk space from unused AI dependencies
+
+### Tools Removed
+
+**UV Tools Uninstalled:**
+1. **aider-chat v0.86.1** (1 executable)
+   - AI pair programming assistant
+   - Reason: Claude Code capabilities now sufficient
+   - Dependencies: 60+ packages including torch, scipy, litellm
+
+2. **claude-monitor v3.1.0** (5 executables)
+   - Claude Code usage monitoring tool
+   - Executables: ccm, ccmonitor, claude-code-monitor, claude-monitor, cmonitor
+   - Reason: Helper tools no longer needed, Claude Code built-in features sufficient
+
+### Tools Retained
+
+**Official AI Tools (npm global):**
+- ✅ **@anthropic-ai/claude-code@2.0.42** - Claude Code (this interface)
+- ✅ **@google/gemini-cli@0.1.3** - Official Google Gemini CLI
+- ✅ **@openai/codex@0.1.2504221401** - OpenAI Codex
+
+**UV Tools (kept):**
+- ✅ **zotero-mcp v0.1.2** (927 MB) - Research paper management, not an AI coding tool
+
+**Other Tools:**
+- ✅ **uv** - Python package manager
+- ✅ **qspectrumanalyzer** - SDR spectrum analyzer (user-local package)
+
+### Space Impact
+
+**Total space freed: 5.5 GB**
+- UV cache cleaned: 5.5 GB (214,031 files)
+- aider-chat removed (torch, scipy, litellm, ML libraries)
+- claude-monitor removed (numpy, pydantic, rich)
+- Orphaned dependencies cleaned
+
+### Configuration Changes
+
+No configuration files needed updating - tools were self-contained UV installations.
+
+### System Health After Cleanup
+
+**AI/Coding Tools:**
+- Official Claude Code: ✅ Active (this interface)
+- Official Gemini CLI: ✅ Installed
+- Official OpenAI Codex: ✅ Installed
+- Experimental tools: ✅ Removed
+- UV tools: 1 remaining (zotero-mcp for research)
+
+**Rationale:**
+- Claude Code's built-in capabilities have matured
+- Helper tools and monitors no longer provide additional value
+- Reduced complexity and maintenance overhead
+- Kept only official, vendor-supported tools
+
+---
+
 ## Template for Future Entries
 
 ### YYYY-MM-DD - [Brief Description]
