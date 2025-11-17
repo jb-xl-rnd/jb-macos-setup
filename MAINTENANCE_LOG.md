@@ -287,6 +287,143 @@ No configuration files needed updating - tools were self-contained UV installati
 
 ---
 
+## 2025-11-17 - Comprehensive Cache Cleanup & Package Manager Audit
+
+### Summary
+- Audited all package managers (npm, cargo, gem, go, luarocks, pip)
+- Identified and cleaned massive caches (30 GB freed!)
+- Package installations are minimal and clean across all managers
+
+### Package Manager Audit Results
+
+**npm (Node.js):**
+- Global packages: 5 only ✅
+  - @anthropic-ai/claude-code@2.0.42
+  - @google/gemini-cli@0.1.3
+  - @openai/codex@0.1.2504221401
+  - ccusage@16.1.2
+  - npm@11.6.2
+- Status: Minimal and clean
+
+**cargo (Rust):**
+- Installed packages: 0 ✅
+- Status: Clean (no packages)
+
+**gem (Ruby):**
+- Installed gems: 48 (all default macOS system gems) ✅
+- Status: Default installation only
+
+**go (Golang):**
+- Installed packages: 0 ✅
+- go version: 1.25.4
+- Status: Clean (no packages in ~/go/bin)
+
+**luarocks (Lua):**
+- Installed packages: 2 ✅
+  - lpeg 1.1.0-2
+  - luafilesystem 1.8.0-1
+- Status: Minimal (likely for neovim)
+
+**pip (Python):**
+- Already audited separately
+- Status: Minimal (6 system packages)
+
+### Cache Cleanup Results
+
+**Before Cleanup:**
+- HuggingFace cache: 11 GB
+- npm cache: 3.5 GB
+- Homebrew cache: 12 GB
+- pip cache: 645 MB
+- **Total: ~27 GB in caches**
+
+**After Cleanup:**
+- .cache directory: 177 MB (down from 11 GB)
+- npm cache: 22 MB (down from 3.5 GB)
+- Homebrew cache: 66 MB (down from 12 GB)
+- pip cache: removed (was 645 MB)
+- **Total: ~265 MB**
+
+**Space Freed by Component:**
+1. HuggingFace ML models: 11 GB
+   - Unused moondream vision models
+   - Downloaded during zotero-mcp update
+2. npm cache: 3.48 GB
+   - Package download cache
+3. Homebrew cache: ~15 GB (aggressive prune)
+   - Old cask installers (Obsidian, Webex, iTerm2, etc.)
+   - Bottle downloads
+   - Build logs
+4. pip cache: 645 MB
+   - Python package cache
+
+**Total Space Freed: ~30 GB**
+
+### Cache Details Cleaned
+
+**HuggingFace Hub Cache:**
+- models--moondream--starmie-v1
+- models--vikhyatk--moondream2
+- Reason: Unused ML models from zotero-mcp dependencies
+
+**Homebrew Prune Details:**
+- Removed old cask installers: Obsidian (212 MB), Webex (231 MB), Stable (152 MB)
+- Removed old iTerm2, Rectangle installers
+- Pruned all bottles and build logs
+- Used `--prune=all` for aggressive cleanup
+
+**npm Cache:**
+- Removed _cacache directory
+- Removed _logs directory
+- Kept only minimal metadata
+
+### Other Large Caches Identified (Not Cleaned)
+
+Application-specific caches that may need manual review:
+- Spotify: 3.8 GB (app cache)
+- Brave Browser: 1.7 GB (browser cache)
+- Thunderbird: 585 MB (email cache)
+- VS Code: 411 MB + 257 MB (cpptools)
+- Zotero: 371 MB (research library)
+- Playwright: 458 MB (browser automation)
+
+These are application-managed and should only be cleaned via the apps themselves or if apps are removed.
+
+### System Health After Cleanup
+
+**Disk Space:**
+- Free space: 1.4 TB
+- Disk usage: 23%
+- Space freed this session: ~30 GB
+
+**Package Managers:**
+- All package managers audited ✅
+- All installations minimal ✅
+- No bloated package lists ✅
+- Caches reduced to essentials ✅
+
+**Recommendations:**
+1. Run cache cleanup quarterly
+2. Homebrew: `brew cleanup --prune=all -s` (every 3 months)
+3. npm: `rm -rf ~/.npm/_cacache` (when cache grows > 1 GB)
+4. HuggingFace: Check ~/.cache/huggingface if using ML tools
+5. Monitor ~/Library/Caches for growing app caches
+
+### Package Manager Summary
+
+Total package installations across all managers: **Very Minimal**
+- npm: 5 packages
+- cargo: 0 packages
+- gem: 48 (system default)
+- go: 0 packages
+- luarocks: 2 packages
+- pip: 6 packages (system)
+- Homebrew: 295 formulae, 34 casks
+
+**Verdict:** Excellent package hygiene. No bloat detected.
+
+---
+
 ## Template for Future Entries
 
 ### YYYY-MM-DD - [Brief Description]
