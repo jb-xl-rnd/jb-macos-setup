@@ -351,6 +351,121 @@ ansible-playbook ansible/macos_setup.yml --check
 llm --mode health
 ```
 
+## Maintenance
+
+### Automated Maintenance Script
+
+Use the included maintenance script for comprehensive system checks:
+
+```bash
+# Run full maintenance (interactive)
+./scripts/system/brew_maintenance.sh
+
+# Quick check without upgrades
+./scripts/system/brew_maintenance.sh --quick
+
+# Verbose output
+./scripts/system/brew_maintenance.sh --verbose
+
+# Help
+./scripts/system/brew_maintenance.sh --help
+```
+
+The maintenance script performs:
+1. Updates package lists
+2. Checks for deprecated packages
+3. Identifies outdated packages
+4. Offers to upgrade packages
+5. Cleans up old versions
+6. Removes orphaned dependencies
+7. Runs system health check
+
+### Manual Maintenance Commands
+
+Alternatively, run these commands individually:
+
+```bash
+# Update all packages
+brew update
+brew upgrade
+
+# Check for deprecated/disabled packages
+brew doctor
+
+# Clean up old versions and cache
+brew cleanup
+brew autoremove
+
+# Audit installed packages for security issues
+brew audit --installed
+```
+
+### Scheduling Automated Maintenance
+
+Create a weekly maintenance schedule with launchd:
+
+```bash
+# Run maintenance script weekly (recommended)
+# Add to your crontab or create a LaunchAgent
+# Example LaunchAgent: ~/Library/LaunchAgents/com.user.brew-maintenance.plist
+```
+
+### Checking for Deprecated Packages
+
+Deprecated packages should be removed and replaced with alternatives:
+
+```bash
+# Show deprecated packages
+brew info --json=v2 --installed | jq -r '.formulae[] | select(.deprecated == true or .disabled == true) | .name'
+
+# Show deprecated casks
+brew doctor | grep -A 10 "deprecated or disabled"
+```
+
+### Handling Deprecated Packages
+
+When `brew doctor` reports deprecated packages:
+
+1. **Research replacement**: Check Homebrew's deprecation message for suggested alternatives
+2. **Update packages.json**: Remove deprecated entries from `config/packages.json`
+3. **Uninstall deprecated**: Run `brew uninstall <package-name>` or `brew uninstall --cask <cask-name>`
+4. **Install replacement**: If available, install the suggested replacement
+5. **Run cleanup**: `brew cleanup && brew autoremove` to remove orphaned dependencies
+
+Example deprecation handling:
+```bash
+# Check for issues
+brew doctor
+
+# Remove deprecated package
+brew uninstall pyside@2
+
+# Cleanup dependencies
+brew autoremove
+brew cleanup
+```
+
+### Keeping packages.json in Sync
+
+After making manual changes to installed packages, update the configuration:
+
+```bash
+# Export currently installed packages
+brew list --formula > /tmp/current_formulae.txt
+brew list --cask > /tmp/current_casks.txt
+
+# Compare with config/packages.json and update accordingly
+# This ensures future installations match your current setup
+```
+
+### Security Best Practices
+
+1. **Regular updates**: Run `brew upgrade` at least monthly
+2. **Audit packages**: Use `brew audit --installed` to check for known issues
+3. **Remove unused packages**: Use `brew autoremove` to clean up orphaned dependencies
+4. **Check for vulnerabilities**: Monitor Homebrew announcements for security advisories
+5. **Avoid deprecated packages**: Replace them promptly when notified
+
 ## Requirements
 
 ### For Web Installation

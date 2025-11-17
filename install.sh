@@ -30,6 +30,7 @@ show_menu() {
     print_style "OTHER OPTIONS:" "warning"
     print_style "4) Edit Configuration Files" "info"
     print_style "5) View Documentation" "info"
+    print_style "6) Run System Maintenance" "info"
     print_style "q) Quit" "info"
     echo ""
 }
@@ -90,6 +91,44 @@ execute_option() {
                     ;;
                 2)
                     less docs/SetupNTFSSupportMacOS.md
+                    ;;
+                b)
+                    return
+                    ;;
+                *)
+                    print_style "Invalid option" "error"
+                    ;;
+            esac
+            ;;
+        6)
+            print_style "System Maintenance:" "info"
+            echo "1) Check for deprecated packages"
+            echo "2) Update all packages"
+            echo "3) Clean up old versions"
+            echo "4) Full maintenance (update, cleanup, audit)"
+            echo "b) Back to main menu"
+            read -p "Choose an option: " maint_choice
+            case $maint_choice in
+                1)
+                    print_style "Checking for deprecated packages..." "info"
+                    brew doctor | grep -A 20 "deprecated or disabled" || print_style "No deprecated packages found!" "success"
+                    ;;
+                2)
+                    print_style "Updating all packages..." "info"
+                    brew update && brew upgrade
+                    ;;
+                3)
+                    print_style "Cleaning up old versions..." "info"
+                    brew cleanup && brew autoremove
+                    ;;
+                4)
+                    print_style "Running full maintenance..." "info"
+                    brew update
+                    brew upgrade
+                    brew doctor | grep -A 20 "deprecated or disabled" || print_style "No deprecated packages found!" "success"
+                    brew cleanup
+                    brew autoremove
+                    print_style "Maintenance complete!" "success"
                     ;;
                 b)
                     return
