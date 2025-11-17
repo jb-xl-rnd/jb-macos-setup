@@ -466,6 +466,51 @@ brew list --cask > /tmp/current_casks.txt
 4. **Check for vulnerabilities**: Monitor Homebrew announcements for security advisories
 5. **Avoid deprecated packages**: Replace them promptly when notified
 
+### Python Package Maintenance
+
+Python packages require separate maintenance from Homebrew:
+
+```bash
+# Run Python package audit
+./scripts/system/python_maintenance.sh
+
+# Quick check without prompts
+./scripts/system/python_maintenance.sh --quick
+
+# Upgrade all packages automatically
+./scripts/system/python_maintenance.sh --upgrade
+```
+
+The Python maintenance script audits:
+1. All Python installations (Homebrew, pyenv)
+2. System packages (minimal is best)
+3. User-local packages (~/.local/lib)
+4. UV tools (recommended package manager)
+5. Virtual environments
+6. Python version recommendations
+
+**Python Package Best Practices:**
+- Keep system Python packages minimal (6 core packages is ideal)
+- Use `uv` for tool installations instead of `pip install --global`
+- Use virtual environments for project dependencies
+- Update UV tools monthly: `uv tool upgrade --all`
+- Avoid `pip install --user` (pollutes user site-packages)
+
+**UV Tools Management:**
+```bash
+# List installed tools
+uv tool list
+
+# Upgrade all tools
+uv tool upgrade --all
+
+# Install a new tool
+uv tool install <package-name>
+
+# Uninstall a tool
+uv tool uninstall <package-name>
+```
+
 ## Requirements
 
 ### For Web Installation
