@@ -3,7 +3,7 @@
 
 # You can use it to add commands that run after AeroSpace startup.
 # Available commands : https://nikitabobko.github.io/AeroSpace/commands
-after-startup-command = []
+after-startup-command = ['enable on']
 
 # Start AeroSpace at login (set to true for automatic startup)
 start-at-login = true
