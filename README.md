@@ -400,6 +400,33 @@ brew autoremove
 brew audit --installed
 ```
 
+### Boot Services & Background Process Audit
+
+Audit all services, agents, and processes running at boot or in the background:
+
+```bash
+# Run full boot services audit
+./scripts/system/boot_services_audit.sh
+
+# Detailed audit with verbose output
+./scripts/system/boot_services_audit.sh --verbose
+
+# Save audit report to file
+./scripts/system/boot_services_audit.sh --output ~/Desktop/boot_audit_$(date +%Y%m%d).txt
+```
+
+The boot services audit identifies:
+1. System-level LaunchDaemons (boot-time services)
+2. User-level LaunchAgents (login-time services)
+3. Login Items (GUI apps at login)
+4. Running background processes
+5. System extensions and kernel extensions
+6. Third-party vs built-in macOS services
+
+See `docs/BOOT_SERVICES_AUDIT.md` for detailed documentation of all boot services.
+
+**Recommended Schedule:** Run monthly to track new services and identify undocumented utilities.
+
 ### Scheduling Automated Maintenance
 
 Create a weekly maintenance schedule with launchd:

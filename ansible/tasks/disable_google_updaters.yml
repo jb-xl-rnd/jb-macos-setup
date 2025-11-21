@@ -1,0 +1,90 @@
+---
+# Disable Google Auto-Update Services
+#
+# Google Chrome and Google Drive install multiple auto-update services
+# (LaunchDaemons and LaunchAgents) that run in the background. This task
+# disables them so updates can be managed via Homebrew instead.
+#
+# Services disabled:
+# - com.google.GoogleUpdater.wake.system (LaunchDaemon)
+# - com.google.keystone.daemon (LaunchDaemon)
+# - com.google.GoogleUpdater.wake (LaunchAgent - user)
+# - com.google.keystone.agent (LaunchAgent - system & user)
+# - com.google.keystone.xpcservice (LaunchAgent - system & user)
+#
+# Note: These services may be reinstalled when Chrome/Drive are upgraded
+# via Homebrew. Run this task again after major app updates if needed.
+
+- name: Check if Google LaunchDaemons exist
+  stat:
+    path: "{{ item }}"
+  register: google_launchdaemons
+  with_items:
+    - /Library/LaunchDaemons/com.google.GoogleUpdater.wake.system.plist
+    - /Library/LaunchDaemons/com.google.keystone.daemon.plist
+
+- name: Unload Google LaunchDaemons
+  command: "launchctl unload {{ item.item }}"
+  become: yes
+  when: item.stat.exists
+  with_items: "{{ google_launchdaemons.results }}"
+  ignore_errors: yes
+
+- name: Remove Google LaunchDaemons
+  file:
+    path: "{{ item }}"
+    state: absent
+  become: yes
+  with_items:
+    - /Library/LaunchDaemons/com.google.GoogleUpdater.wake.system.plist
+    - /Library/LaunchDaemons/com.google.keystone.daemon.plist
+
+- name: Check if system-wide Google LaunchAgents exist
+  stat:
+    path: "{{ item }}"
+  register: google_system_agents
+  with_items:
+    - /Library/LaunchAgents/com.google.keystone.agent.plist
+    - /Library/LaunchAgents/com.google.keystone.xpcservice.plist
+
+- name: Remove system-wide Google LaunchAgents
+  file:
+    path: "{{ item }}"
+    state: absent
+  become: yes
+  with_items:
+    - /Library/LaunchAgents/com.google.keystone.agent.plist
+    - /Library/LaunchAgents/com.google.keystone.xpcservice.plist
+
+- name: Check if user Google LaunchAgents exist
+  stat:
+    path: "{{ ansible_env.HOME }}/Library/LaunchAgents/{{ item }}"
+  register: google_user_agents
+  with_items:
+    - com.google.GoogleUpdater.wake.plist
+    - com.google.keystone.agent.plist
+    - com.google.keystone.xpcservice.plist
+
+- name: Unload user Google LaunchAgents
+  command: "launchctl unload {{ ansible_env.HOME }}/Library/LaunchAgents/{{ item.item }}"
+  when: item.stat.exists
+  with_items: "{{ google_user_agents.results }}"
+  ignore_errors: yes
+
+- name: Remove user Google LaunchAgents
+  file:
+    path: "{{ ansible_env.HOME }}/Library/LaunchAgents/{{ item }}"
+    state: absent
+  with_items:
+    - com.google.GoogleUpdater.wake.plist
+    - com.google.keystone.agent.plist
+    - com.google.keystone.xpcservice.plist
+
+- name: Verify no Google updater services are running
+  shell: launchctl list | grep -i google || true
+  register: google_services_check
+  changed_when: false
+
+- name: Report Google updater services status
+  debug:
+    msg: "{{ 'Google updater services disabled successfully' if google_services_check.stdout == '' else 'Warning: Some Google services may still be running' }}"
