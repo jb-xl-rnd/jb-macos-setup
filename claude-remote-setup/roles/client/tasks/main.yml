@@ -35,7 +35,7 @@
     block: |
       # ── Claude Code Remote Session ──────────────────────────────
       # Connect via mosh -> auto-lands in tmux session
-      alias cc-remote="mosh {{ target_user }}@{{ tailscale_hostname }}"
+      alias cc-remote="mosh --ssh='ssh -i ~/.ssh/jb-remote-setup_ed25519 -o IdentitiesOnly=yes' {{ target_user }}@{{ tailscale_hostname }}"
 
       # Connect via plain SSH (fallback)
       alias cc-remote-ssh="ssh claude-remote"
