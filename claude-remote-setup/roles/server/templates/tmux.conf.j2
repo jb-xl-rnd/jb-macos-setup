@@ -17,6 +17,10 @@ set -g renumber-windows on
 set -g set-titles on
 set -g set-titles-string "#S:#I #T"
 
-# Status bar - minimal but informative
-set -g status-right "#{?client_prefix,⌨ ,}%H:%M"
-set -g status-left "[#S] "
+# Status bar - visible and informative
+set -g status-style "bg=colour235,fg=colour248"
+set -g status-left "#[bg=colour25,fg=white,bold] #S #[default] "
+set -g status-right "#{?client_prefix,#[fg=yellow]PREFIX ,}%H:%M "
+set -g window-status-format " #I:#W "
+set -g window-status-current-format "#[bg=colour240,fg=white,bold] #I:#W #[default]"
+set -g status-left-length 20
