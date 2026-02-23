@@ -91,7 +91,7 @@
     marker: "# {mark} ANSIBLE MANAGED - claude aliases"
     block: |
       # Run Claude Code in dangerously-skip-permissions mode
-      alias opusmagnum="claude --dangerously-skip-permissions"
+      alias opusmagnum="claude --allow-dangerously-skip-permissions --dangerously-skip-permissions"
 
 # ── 8. Energy settings — always on, never sleep ───────────
 - name: Enforce always-on power settings
