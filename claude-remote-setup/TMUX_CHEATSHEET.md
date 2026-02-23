@@ -74,8 +74,90 @@ tmux kill-server                 Kill everything
 Ctrl-b Ctrl-arrow    Resize pane in arrow direction (hold Ctrl, tap arrow repeatedly)
 ```
 
+## Working with Claude Code in tmux
+
+When you're connected via mosh with Claude running in a tmux window, your layers look like this:
+
+```
+Kitty tab (local)
+ └─ mosh connection
+     └─ tmux session "claude"
+         ├─ window 0: zsh shell
+         ├─ window 1: claude code (running)  <── you are here
+         └─ window 2: htop or whatever
+```
+
+### Leave Claude running, go back to laptop
+
+This is the most common thing you'll do. Two steps:
+
+```
+1. Ctrl-b d          Detach from tmux (everything keeps running)
+2. exit              Close the mosh connection (back to Kitty)
+```
+
+Claude continues working on the remote. Reconnect later with `cc-remote`.
+
+You can also just **close the Kitty tab** or **close your laptop lid** — mosh
+handles the disconnect gracefully and tmux keeps everything alive.
+
+### Switch away from Claude to another window
+
+Don't leave — just switch windows. Claude keeps running in its window.
+
+```
+Ctrl-b c             Create a new window (opens a fresh shell)
+Ctrl-b n / Ctrl-b p  Switch between windows
+Ctrl-b 0             Jump back to window 0
+Ctrl-b w             Visual picker (arrow keys + enter)
+```
+
+The status bar at the bottom shows all windows. The active one is highlighted.
+
+### Check on Claude from another window
+
+Switch to a different tmux window and peek:
+
+```
+Ctrl-b 1             Switch to window 1 (where Claude is)
+                     Scroll up with Ctrl-b [ then PgUp
+                     Press q to exit scroll mode
+Ctrl-b 0             Switch back to your shell
+```
+
+### Stop Claude (kill one window)
+
+If you want to stop Claude but keep your other tmux windows:
+
+```
+Ctrl-b 1             Switch to the Claude window
+Ctrl-c               Interrupt Claude
+exit                  Close that window's shell
+```
+
+Or from any window, kill a specific one:
+
+```
+Ctrl-b &             Kill the CURRENT window (confirms with y/n)
+```
+
+### Nuke everything (kill the whole session)
+
+From your laptop (not connected):
+
+```bash
+cc-kill              Kills tmux session + any caffeinate processes
+```
+
+Or if you're inside tmux:
+
+```bash
+tmux kill-session    Kills the current session and all its windows
+```
+
 ## Remember
 
 - **Detach** (`Ctrl-b d`) keeps everything running. **Exit** kills the window.
 - The status bar at the bottom shows your windows. Highlighted = active.
 - Mouse works for clicking panes, scrolling, and resizing.
+- Closing your laptop lid is fine — mosh + tmux handle it.
