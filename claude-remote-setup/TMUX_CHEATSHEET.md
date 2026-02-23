@@ -37,6 +37,16 @@ Ctrl-b {        Swap pane left
 Ctrl-b }        Swap pane right
 ```
 
+## Copy / Paste
+
+**To copy text to your Mac clipboard through mosh + tmux:**
+
+Hold **Shift** while mouse-selecting text, then **Cmd+C**. This bypasses tmux's
+mouse capture and lets Kitty handle the selection natively. This is the most
+reliable method through the mosh → tmux chain.
+
+**Shift + mouse select → Cmd+C → Cmd+V.** That's it.
+
 ## Scrollback / Copy Mode
 
 ```
@@ -46,6 +56,8 @@ Ctrl-b [        Enter scroll mode
   /               Search forward
   ?               Search backward
   n               Next search result
+  Space           Start selection (vi mode)
+  Enter           Copy selection and exit
   q               Exit scroll mode
 Mouse scroll    Also works (mouse mode enabled)
 ```

@@ -14,6 +14,8 @@ bind c new-window -c "#{pane_current_path}"
 # Clipboard — OSC 52 passthrough (works through mosh + Kitty)
 set -g set-clipboard on
 set -g allow-passthrough on
+# Fix tmux -> mosh OSC 52 compatibility (force clipboard type 'c')
+set -ag terminal-overrides ",*:Ms=\\E]52;c;%p2%s\\7"
 
 # Vi-style copy mode
 setw -g mode-keys vi
