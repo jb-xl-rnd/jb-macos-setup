@@ -76,6 +76,23 @@ else
     print_style "iTerm2 already installed" "success"
 fi
 
+# Install Raycast and disable Spotlight
+if ! brew list --cask raycast &> /dev/null; then
+    print_style "Installing Raycast..." "info"
+    brew install --cask raycast
+    print_style "Raycast installed successfully" "success"
+else
+    print_style "Raycast already installed" "success"
+fi
+
+# Disable Spotlight keyboard shortcut (Cmd+Space) so Raycast can use it
+print_style "Disabling Spotlight shortcut (Cmd+Space) for Raycast..." "info"
+# Disable Spotlight shortcut via defaults
+defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 '{ enabled = 0; value = { parameters = (65535, 49, 1048576); type = standard; }; }'
+# Restart the hotkey daemon to apply
+/System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
+print_style "Spotlight shortcut disabled — set Raycast hotkey to Cmd+Space in Raycast preferences" "success"
+
 # Install oh-my-zsh if using zsh and not already installed
 if [ "$CURRENT_SHELL" = "zsh" ] && [ ! -d "$HOME/.oh-my-zsh" ]; then
     print_style "Installing oh-my-zsh..." "info"
@@ -93,6 +110,7 @@ print_style "Homebrew Version: $(brew --version | head -n 1)" "info"
 print_style "\nNext Steps:" "warning"
 print_style "1. iTerm2 has been installed. Please launch it from your Applications folder" "warning"
 print_style "2. Restart your terminal or run: source $SHELL_CONFIG_FILE" "warning"
+print_style "3. Open Raycast, set its hotkey to Cmd+Space in Raycast preferences" "warning"
 if [ "$CURRENT_SHELL" = "zsh" ]; then
-    print_style "3. oh-my-zsh has been installed. Customize your theme in $SHELL_CONFIG_FILE" "warning"
+    print_style "4. oh-my-zsh has been installed. Customize your theme in $SHELL_CONFIG_FILE" "warning"
 fi
