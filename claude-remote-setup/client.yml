@@ -1,0 +1,9 @@
+---
+- name: Configure local machine for connecting to remote Claude Code sessions
+  hosts: client
+  connection: local
+  gather_facts: yes
+
+  roles:
+    - common
+    - client

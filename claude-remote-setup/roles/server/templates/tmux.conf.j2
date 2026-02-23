@@ -1,0 +1,22 @@
+# Session persistence & scrollback
+set -g history-limit {{ tmux_history_limit }}
+set -g mouse on
+
+# Better terminal support
+set -g default-terminal "screen-256color"
+set -sa terminal-overrides ',xterm-256color:RGB'
+
+# Splits open in current directory
+bind % split-window -h -c "#{pane_current_path}"
+bind '"' split-window -v -c "#{pane_current_path}"
+bind c new-window -c "#{pane_current_path}"
+
+# Quality of life
+set -s escape-time 0
+set -g renumber-windows on
+set -g set-titles on
+set -g set-titles-string "#S:#I #T"
+
+# Status bar - minimal but informative
+set -g status-right "#{?client_prefix,⌨ ,}%H:%M"
+set -g status-left "[#S] "

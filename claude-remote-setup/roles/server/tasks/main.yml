@@ -1,0 +1,105 @@
+---
+# ── 1. Enable Remote Login (SSH) ───────────────────────────
+- name: Check if Remote Login is enabled
+  shell: systemsetup -getremotelogin 2>/dev/null | grep -q "On"
+  register: remote_login_check
+  changed_when: false
+  failed_when: false
+  become: yes
+
+- name: Enable Remote Login
+  command: systemsetup -setremotelogin on
+  become: yes
+  when: remote_login_check.rc != 0
+
+# ── 2. SSH Hardening ───────────────────────────────────────
+- name: Harden sshd_config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    validate: "/usr/sbin/sshd -t -f %s"
+  loop:
+    - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^#?KbdInteractiveAuthentication', line: 'KbdInteractiveAuthentication no' }
+    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^#?MaxAuthTries', line: 'MaxAuthTries 3' }
+    - { regexp: '^#?LoginGraceTime', line: 'LoginGraceTime 20' }
+  become: yes
+  notify: Restart sshd
+
+- name: Set AllowUsers in sshd_config
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: '^#?AllowUsers'
+    line: "AllowUsers {{ target_user }}"
+    validate: "/usr/sbin/sshd -t -f %s"
+  become: yes
+  notify: Restart sshd
+
+# ── 3. Fix mosh PATH for non-interactive shells ───────────
+- name: Ensure Homebrew PATH in ~/.zshenv (required for mosh)
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshenv"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED - Homebrew PATH for mosh"
+    block: |
+      # Homebrew PATH for non-interactive shells (required for mosh-server)
+      if [ -d "{{ homebrew_prefix }}/bin" ]; then
+        export PATH="{{ homebrew_prefix }}/bin:$PATH"
+      fi
+
+# ── 4. macOS Firewall — allow mosh-server ─────────────────
+- name: Resolve real path of mosh-server
+  shell: readlink -f "{{ homebrew_prefix }}/bin/mosh-server"
+  register: mosh_server_path
+  changed_when: false
+
+- name: Allow mosh-server through macOS firewall
+  shell: |
+    /usr/libexec/ApplicationFirewall/socketfilterfw --add "{{ mosh_server_path.stdout }}"
+    /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp "{{ mosh_server_path.stdout }}"
+  become: yes
+  register: firewall_result
+  changed_when: "'added' in firewall_result.stdout or 'unblocked' in firewall_result.stdout"
+
+# ── 5. tmux configuration ─────────────────────────────────
+- name: Deploy tmux.conf
+  template:
+    src: tmux.conf.j2
+    dest: "{{ ansible_env.HOME }}/.tmux.conf"
+    mode: '0644'
+
+# ── 6. Auto-attach tmux on SSH login ──────────────────────
+- name: Add tmux auto-attach to ~/.zshrc
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED - tmux auto-attach"
+    block: |
+      # Auto-attach to tmux session on SSH connections
+      if [[ -n "$SSH_CONNECTION" ]] && [[ -z "$TMUX" ]]; then
+        tmux attach -t {{ tmux_session_name }} 2>/dev/null || tmux new -s {{ tmux_session_name }}
+      fi
+
+# ── 7. Energy settings — always on, never sleep ───────────
+- name: Enforce always-on power settings
+  shell: |
+    # Disable all sleep
+    pmset -a disablesleep 1
+    pmset -a sleep 0
+    pmset -a disksleep 0
+    pmset -a displaysleep 0
+    # Disable standby and hibernation
+    pmset -a standby 0
+    pmset -a autopoweroff 0
+    pmset -a hibernatemode 0
+    # Wake on network access (for remote wake)
+    pmset -a womp 1
+    # Auto restart after power failure
+    pmset -a autorestart 1
+    # Disable Power Nap
+    pmset -a powernap 0
+  become: yes
+  changed_when: false

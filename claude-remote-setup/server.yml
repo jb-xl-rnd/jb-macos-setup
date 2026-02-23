@@ -1,0 +1,8 @@
+---
+- name: Configure remote Mac for persistent Claude Code sessions
+  hosts: server
+  gather_facts: yes
+
+  roles:
+    - common
+    - server

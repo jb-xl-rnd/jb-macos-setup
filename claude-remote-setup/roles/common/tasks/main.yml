@@ -1,0 +1,7 @@
+---
+- name: Install mosh and tmux via Homebrew
+  community.general.homebrew:
+    name:
+      - mosh
+      - tmux
+    state: present

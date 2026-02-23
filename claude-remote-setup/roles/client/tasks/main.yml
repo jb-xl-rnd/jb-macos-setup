@@ -1,0 +1,79 @@
+---
+# ── 1. SSH config ──────────────────────────────────────────
+- name: Create SSH controlmasters directory
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh/controlmasters"
+    state: directory
+    mode: '0700'
+
+- name: Add remote Mac to SSH config
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.ssh/config"
+    create: yes
+    mode: '0600'
+    marker: "# {mark} ANSIBLE MANAGED - claude-remote"
+    block: |
+      Host claude-remote
+          HostName {{ tailscale_hostname }}
+          User {{ target_user }}
+          IdentityFile ~/.ssh/jb-remote-setup_ed25519
+          IdentitiesOnly yes
+          # Keep connections alive through Tailscale
+          ServerAliveInterval 10
+          ServerAliveCountMax 60
+          # Multiplex connections
+          ControlMaster auto
+          ControlPath ~/.ssh/controlmasters/%C
+          ControlPersist 10m
+
+# ── 2. Shell aliases ──────────────────────────────────────
+- name: Add Claude Code remote aliases to ~/.zshrc
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED - claude-remote aliases"
+    block: |
+      # ── Claude Code Remote Session ──────────────────────────────
+      # Connect via mosh -> auto-lands in tmux session
+      alias cc-remote="mosh {{ target_user }}@{{ tailscale_hostname }}"
+
+      # Connect via plain SSH (fallback)
+      alias cc-remote-ssh="ssh claude-remote"
+
+      # Quick attach to running tmux session (if already SSH'd in)
+      alias cc-attach="ssh claude-remote -t 'tmux attach -t {{ tmux_session_name }}'"
+
+      # Start Claude Code in a caffeinated tmux session on the remote
+      alias cc-start="ssh claude-remote -t 'tmux new -d -s {{ tmux_session_name }} \"caffeinate -s claude\" 2>/dev/null; tmux attach -t {{ tmux_session_name }}'"
+
+      # Check if Claude Code is running on the remote
+      alias cc-status="ssh claude-remote -t 'tmux ls 2>/dev/null && echo \"---\" && pgrep -fl claude'"
+
+      # Kill remote Claude Code session
+      alias cc-kill="ssh claude-remote -t 'tmux kill-session -t {{ tmux_session_name }} 2>/dev/null; killall caffeinate 2>/dev/null; echo Done.'"
+      # ────────────────────────────────────────────────────────────
+
+# ── 3. SSH key setup ──────────────────────────────────────
+- name: Generate ed25519 SSH key if not present
+  openssh_keypair:
+    path: "{{ ansible_env.HOME }}/.ssh/id_ed25519"
+    type: ed25519
+    comment: "{{ ansible_env.USER }}@{{ ansible_hostname }}"
+  register: ssh_key
+
+- name: Copy SSH key to remote Mac
+  shell: >
+    ssh-copy-id -i "{{ ansible_env.HOME }}/.ssh/id_ed25519.pub"
+    -o StrictHostKeyChecking=accept-new
+    {{ target_user }}@{{ tailscale_hostname }}
+  when: ssh_key.changed
+  register: copy_result
+  failed_when: false
+
+- name: Display SSH key copy instructions (if auto-copy failed)
+  debug:
+    msg: |
+      SSH key was generated but could not be auto-copied to the remote Mac.
+      Manually copy with:
+        ssh-copy-id -i ~/.ssh/id_ed25519.pub {{ target_user }}@{{ tailscale_hostname }}
+  when: ssh_key.changed and copy_result.rc is defined and copy_result.rc != 0

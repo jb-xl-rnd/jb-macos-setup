@@ -1,0 +1,19 @@
+---
+# ── User Configuration ──────────────────────────────────────
+# macOS username on the remote Mac
+target_user: jb
+
+# Remote Mac's Tailscale hostname (used in SSH config and aliases)
+# Find with: tailscale status
+tailscale_hostname: jbs-mac-mini.tailde191e.ts.net
+
+# ── tmux Settings ───────────────────────────────────────────
+tmux_session_name: claude
+tmux_history_limit: 100000
+
+# ── mosh Settings ───────────────────────────────────────────
+# UDP port range for mosh connections
+mosh_ports: "60000:60010"
+
+# ── Homebrew Path (Apple Silicon) ───────────────────────────
+homebrew_prefix: /opt/homebrew
