@@ -51,6 +51,7 @@
 
       # Kill remote Claude Code session
       alias cc-kill="ssh claude-remote -t 'tmux kill-session -t {{ tmux_session_name }} 2>/dev/null; killall caffeinate 2>/dev/null; echo Done.'"
+
       # ────────────────────────────────────────────────────────────
 
 # ── 3. SSH key setup ──────────────────────────────────────

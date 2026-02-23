@@ -83,7 +83,17 @@
         tmux attach -t {{ tmux_session_name }} 2>/dev/null || tmux new -s {{ tmux_session_name }}
       fi
 
-# ── 7. Energy settings — always on, never sleep ───────────
+# ── 7. Shell aliases ──────────────────────────────────────
+- name: Add shell aliases to ~/.zshrc
+  blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED - claude aliases"
+    block: |
+      # Run Claude Code in dangerously-skip-permissions mode
+      alias opusmagnum="caffeinate -s claude --dangerously-skip-permissions"
+
+# ── 8. Energy settings — always on, never sleep ───────────
 - name: Enforce always-on power settings
   shell: |
     # Disable all sleep
