@@ -96,8 +96,24 @@ print_style "Spotlight shortcut disabled — set Raycast hotkey to Cmd+Space in 
 # Install oh-my-zsh if using zsh and not already installed
 if [ "$CURRENT_SHELL" = "zsh" ] && [ ! -d "$HOME/.oh-my-zsh" ]; then
     print_style "Installing oh-my-zsh..." "info"
-    sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
-    print_style "oh-my-zsh installed successfully" "success"
+    # KEEP_ZSHRC prevents oh-my-zsh from clobbering existing .zshrc
+    KEEP_ZSHRC=yes sh -c "$(curl -fsSL https://raw.githubusercontent.com/ohmyzsh/ohmyzsh/master/tools/install.sh)" "" --unattended
+    # Add oh-my-zsh source line to existing .zshrc if not present
+    if ! grep -q 'source.*oh-my-zsh.sh' "$SHELL_CONFIG_FILE" 2>/dev/null; then
+        # Prepend oh-my-zsh config to top of .zshrc
+        TEMP_ZSHRC=$(mktemp)
+        cat > "$TEMP_ZSHRC" << 'OMZRC'
+# oh-my-zsh configuration
+export ZSH="$HOME/.oh-my-zsh"
+ZSH_THEME="robbyrussell"
+plugins=(git)
+source $ZSH/oh-my-zsh.sh
+
+OMZRC
+        cat "$SHELL_CONFIG_FILE" >> "$TEMP_ZSHRC"
+        mv "$TEMP_ZSHRC" "$SHELL_CONFIG_FILE"
+    fi
+    print_style "oh-my-zsh installed successfully (existing .zshrc preserved)" "success"
 elif [ "$CURRENT_SHELL" = "zsh" ]; then
     print_style "oh-my-zsh already installed" "success"
 fi
