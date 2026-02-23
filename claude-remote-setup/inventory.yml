@@ -4,7 +4,7 @@ all:
     server:
       hosts:
         remote_mac:
-          ansible_host: jbs-mac-mini.tailde191e.ts.net
+          ansible_host: jbs-mac-mini.tail0f84e9.ts.net
           ansible_user: "{{ target_user }}"
           ansible_ssh_private_key_file: ~/.ssh/jb-remote-setup_ed25519
           ansible_ssh_extra_args: "-o IdentitiesOnly=yes"

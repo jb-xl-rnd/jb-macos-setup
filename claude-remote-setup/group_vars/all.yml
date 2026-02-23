@@ -5,7 +5,7 @@ target_user: jb
 
 # Remote Mac's Tailscale hostname (used in SSH config and aliases)
 # Find with: tailscale status
-tailscale_hostname: jbs-mac-mini.tailde191e.ts.net
+tailscale_hostname: jbs-mac-mini.tail0f84e9.ts.net
 
 # ── tmux Settings ───────────────────────────────────────────
 tmux_session_name: claude
