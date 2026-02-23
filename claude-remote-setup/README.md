@@ -79,6 +79,36 @@ source ~/.zshrc
 | `mosh_ports` | `60000:60010` | UDP port range for mosh |
 | `homebrew_prefix` | `/opt/homebrew` | Homebrew install path (Apple Silicon) |
 
+## Understanding the Connection Layers
+
+When you run `cc-remote`, you're going through multiple nested layers. Understanding these prevents confusion about what `exit` does and where you are.
+
+```
+Your Laptop
+ └─ mosh  ........................ resilient UDP connection (survives Wi-Fi changes, laptop sleep)
+     └─ tmux  ................... session manager on the remote Mac (persists after disconnect)
+         └─ zsh shell  ......... your actual working shell
+             └─ claude  ........ or whatever you're running
+```
+
+### What happens when you type `exit`
+
+Each `exit` peels back one layer. This is the most common source of confusion:
+
+| Where you are | What `exit` does | What you wanted instead |
+|---------------|-----------------|------------------------|
+| Inside Claude Code | Quits Claude Code, back to shell | -- |
+| In a tmux shell | **Closes that tmux window.** If it's the last window, **kills the tmux session** and drops you to mosh | **Detach instead:** `Ctrl-b d` |
+| In mosh (after tmux dies) | Closes mosh, back to your laptop | -- |
+
+**The golden rule:** Never `exit` out of tmux. Always **detach** with `Ctrl-b d`. Detaching leaves everything running on the remote. Exiting kills it.
+
+### Quick reference: Where am I?
+
+- **You see `[claude] 0:zsh*` in a status bar at the bottom** — you're inside tmux
+- **You see `mosh [...]` in your terminal title** — you're in mosh but tmux isn't running
+- **Neither** — you're on your local machine
+
 ## Usage
 
 ### Daily workflow
@@ -101,6 +131,16 @@ cc-remote
 # You're back in the same tmux session. Scroll up to catch up.
 ```
 
+### Disconnecting safely
+
+| Method | What happens | Session survives? |
+|--------|-------------|-------------------|
+| `Ctrl-b d` | Detach tmux, then type `exit` to close mosh | Yes |
+| Close laptop lid | mosh freezes, tmux keeps running | Yes |
+| Wi-Fi drops | mosh reconnects automatically when network returns | Yes |
+| `exit` in shell | Kills tmux window (dangerous if last window) | Only if other windows exist |
+| `cc-kill` from laptop | Intentionally tears down everything | No (that's the point) |
+
 ### All aliases
 
 | Alias | What it does |
@@ -112,16 +152,84 @@ cc-remote
 | `cc-status` | Check if Claude Code is running on remote |
 | `cc-kill` | Kill tmux session and caffeinate on remote |
 
-### tmux basics
+## tmux Guide
 
-| Key | Action |
-|-----|--------|
-| `Ctrl-b d` | Detach (session keeps running) |
-| `Ctrl-b [` | Enter scroll mode (q to exit) |
-| `Ctrl-b %` | Split pane vertically |
-| `Ctrl-b "` | Split pane horizontally |
-| `Ctrl-b c` | New window |
-| `Ctrl-b n/p` | Next/previous window |
+tmux is a terminal multiplexer — think of it as tabs and split panes that live on the remote machine. All tmux commands start with a **prefix key**: `Ctrl-b` (hold Ctrl, press b, release both, then press the command key).
+
+### Windows (tabs)
+
+Windows are like browser tabs. The status bar at the bottom shows them.
+
+```
+[claude] 0:zsh* 1:claude  2:htop                    01:42
+         ^^^^^  ^^^^^^^^  ^^^^^^
+         tab 0  tab 1     tab 2     (* = active)
+```
+
+| Keys | Action |
+|------|--------|
+| `Ctrl-b c` | Create new window (tab) |
+| `Ctrl-b n` | Next window |
+| `Ctrl-b p` | Previous window |
+| `Ctrl-b 0-9` | Jump to window by number |
+| `Ctrl-b ,` | Rename current window |
+| `Ctrl-b w` | Visual window picker (use arrows + enter) |
+
+### Panes (splits)
+
+Panes split a single window into multiple terminals side by side.
+
+| Keys | Action |
+|------|--------|
+| `Ctrl-b %` | Split vertically (left/right) |
+| `Ctrl-b "` | Split horizontally (top/bottom) |
+| `Ctrl-b arrow` | Move between panes |
+| `Ctrl-b z` | Zoom pane (fullscreen toggle) |
+| `Ctrl-b x` | Kill current pane |
+
+### Scrollback
+
+The buffer holds 100,000 lines. Essential for catching up on Claude Code output after reconnecting.
+
+| Keys | Action |
+|------|--------|
+| `Ctrl-b [` | Enter scroll mode |
+| `Up/Down` or `PgUp/PgDn` | Scroll (while in scroll mode) |
+| `q` | Exit scroll mode |
+| Mouse scroll | Also works (mouse mode is enabled) |
+
+### Session management
+
+| Keys | Action |
+|------|--------|
+| `Ctrl-b d` | **Detach** (the most important one) |
+| `Ctrl-b s` | List/switch sessions |
+| `Ctrl-b $` | Rename session |
+
+### Example workflow with multiple windows
+
+```bash
+# You're connected via cc-remote, inside tmux
+
+# Window 0: Claude Code
+caffeinate -s claude
+
+# Open a new window for a side task
+# Press: Ctrl-b c
+# Now in window 1 - run tests, check logs, whatever
+tail -f /some/log
+
+# Switch back to Claude
+# Press: Ctrl-b 0
+
+# Detach and leave everything running
+# Press: Ctrl-b d
+# Then: exit  (closes mosh)
+
+# Later, reconnect
+cc-remote
+# Both windows are still there, Claude is still running
+```
 
 ## Troubleshooting
 
