@@ -17,3 +17,13 @@ mosh_ports: "60000:60010"
 
 # ── Homebrew Path (Apple Silicon) ───────────────────────────
 homebrew_prefix: /opt/homebrew
+
+# ── RustDesk Settings ──────────────────────────────────────
+# Remote desktop for headless GUI access
+rustdesk_app_path: /Applications/RustDesk.app
+rustdesk_binary: /Applications/RustDesk.app/Contents/MacOS/RustDesk
+rustdesk_service_bin: /Applications/RustDesk.app/Contents/MacOS/service
+rustdesk_config_dir: "/Users/{{ target_user }}/Library/Preferences/com.carriez.RustDesk"
+rustdesk_remote_id: ""
+# Permanent password for unattended access (use ansible-vault in production)
+rustdesk_password: "CHANGE_ME"

@@ -1,0 +1,13 @@
+---
+- name: Install RustDesk via Homebrew cask
+  community.general.homebrew_cask:
+    name: rustdesk
+    state: present
+
+- name: Add RustDesk aliases to .zshrc
+  ansible.builtin.blockinfile:
+    path: "{{ ansible_env.HOME }}/.zshrc"
+    marker: "# {mark} ANSIBLE MANAGED - rustdesk aliases"
+    block: |
+      # Quick-connect to remote RustDesk (Mac Mini)
+      alias cc-gui='open "rustdesk://connection/new/{{ rustdesk_remote_id }}"'

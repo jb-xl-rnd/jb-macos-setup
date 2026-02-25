@@ -1,0 +1,8 @@
+---
+- name: Run server tasks
+  ansible.builtin.include_tasks: server.yml
+  when: "'server' in group_names"
+
+- name: Run client tasks
+  ansible.builtin.include_tasks: client.yml
+  when: "'client' in group_names"

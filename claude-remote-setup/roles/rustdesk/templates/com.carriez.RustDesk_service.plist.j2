@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Reconstructed from RustDesk install conventions. If RustDesk is
+     reinstalled manually, compare with the actual file at
+     /Library/LaunchDaemons/com.carriez.RustDesk_service.plist -->
+<plist version="1.0">
+    <dict>
+        <key>Label</key>
+        <string>com.carriez.RustDesk_service</string>
+
+        <key>AssociatedBundleIdentifiers</key>
+        <string>com.carriez.rustdesk</string>
+
+        <key>KeepAlive</key>
+        <true/>
+        <key>ThrottleInterval</key>
+        <integer>1</integer>
+        <key>RunAtLoad</key>
+        <true/>
+        <key>ProgramArguments</key>
+        <array>
+            <string>{{ rustdesk_service_bin }}</string>
+        </array>
+        <key>WorkingDirectory</key>
+        <string>{{ rustdesk_app_path }}/Contents/MacOS/</string>
+        <key>StandardErrorPath</key>
+        <string>/tmp/rustdesk_service.err</string>
+        <key>StandardOutPath</key>
+        <string>/tmp/rustdesk_service.out</string>
+    </dict>
+</plist>

@@ -1,0 +1,24 @@
+---
+- name: Reload RustDesk service daemon
+  ansible.builtin.shell: |
+    launchctl unload /Library/LaunchDaemons/com.carriez.RustDesk_service.plist 2>/dev/null || true
+    launchctl load -w /Library/LaunchDaemons/com.carriez.RustDesk_service.plist
+  become: true
+  listen: Restart RustDesk services
+
+- name: Reload RustDesk server agent
+  ansible.builtin.shell: |
+    launchctl unload /Library/LaunchAgents/com.carriez.RustDesk_server.plist 2>/dev/null || true
+    launchctl load -w /Library/LaunchAgents/com.carriez.RustDesk_server.plist
+  listen: Restart RustDesk services
+
+- name: Restart RustDesk service daemon
+  ansible.builtin.shell: |
+    launchctl unload /Library/LaunchDaemons/com.carriez.RustDesk_service.plist 2>/dev/null || true
+    launchctl load -w /Library/LaunchDaemons/com.carriez.RustDesk_service.plist
+  become: true
+
+- name: Restart RustDesk server agent
+  ansible.builtin.shell: |
+    launchctl unload /Library/LaunchAgents/com.carriez.RustDesk_server.plist 2>/dev/null || true
+    launchctl load -w /Library/LaunchAgents/com.carriez.RustDesk_server.plist

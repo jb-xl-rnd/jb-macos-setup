@@ -1,0 +1,19 @@
+---
+# RustDesk remote desktop setup (headless GUI access)
+#
+# Usage: ansible-playbook -i inventory.yml rustdesk.yml --ask-become-pass
+#
+# Server: Installs RustDesk, configures permanent password, deploys
+#         LaunchDaemon + LaunchAgent for unattended access.
+# Client: Installs RustDesk, adds cc-gui alias for quick connect.
+
+- name: Configure RustDesk server (remote Mac)
+  hosts: server
+  roles:
+    - rustdesk
+
+- name: Configure RustDesk client (local machine)
+  hosts: client
+  connection: local
+  roles:
+    - rustdesk

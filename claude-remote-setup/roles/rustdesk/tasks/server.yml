@@ -1,0 +1,167 @@
+---
+# ── Install RustDesk ──────────────────────────────────────
+- name: Install RustDesk via Homebrew cask
+  community.general.homebrew_cask:
+    name: rustdesk
+    state: present
+
+# ── Config directory ──────────────────────────────────────
+- name: Ensure RustDesk config directory exists
+  ansible.builtin.file:
+    path: "{{ rustdesk_config_dir }}"
+    state: directory
+    owner: "{{ target_user }}"
+    group: staff
+    mode: "0755"
+
+# ── Generate identity (first-run only) ───────────────────
+- name: Check if RustDesk identity is generated
+  ansible.builtin.command: grep -q 'key_confirmed = true' "{{ rustdesk_config_dir }}/RustDesk.toml"
+  register: identity_check
+  changed_when: false
+  failed_when: false
+
+- name: Generate RustDesk identity (first run)
+  ansible.builtin.shell: |
+    {{ rustdesk_binary }} &
+    RUSTDESK_PID=$!
+    for i in $(seq 1 30); do
+      if grep -q 'key_confirmed = true' "{{ rustdesk_config_dir }}/RustDesk.toml" 2>/dev/null; then
+        break
+      fi
+      sleep 1
+    done
+    kill $RUSTDESK_PID 2>/dev/null || true
+    wait $RUSTDESK_PID 2>/dev/null || true
+  when: identity_check.rc != 0
+
+# ── Set permanent password ────────────────────────────────
+- name: Ensure RustDesk2.toml exists
+  ansible.builtin.copy:
+    content: |
+      rendezvous_server = ''
+      nat_type = 0
+      serial = 0
+      unlock_pin = ''
+      trusted_devices = ''
+
+      [options]
+    dest: "{{ rustdesk_config_dir }}/RustDesk2.toml"
+    owner: "{{ target_user }}"
+    group: staff
+    mode: "0644"
+    force: false
+
+- name: Set permanent password in RustDesk2.toml
+  ansible.builtin.lineinfile:
+    path: "{{ rustdesk_config_dir }}/RustDesk2.toml"
+    regexp: '^permanent-password\s*='
+    line: "permanent-password = '{{ rustdesk_password }}'"
+    insertafter: '^\[options\]'
+  notify: Restart RustDesk services
+
+# ── Fix file ownership ────────────────────────────────────
+- name: Fix RustDesk config directory ownership
+  ansible.builtin.file:
+    path: "{{ rustdesk_config_dir }}"
+    state: directory
+    owner: "{{ target_user }}"
+    group: staff
+    recurse: true
+  become: true
+
+# ── Deploy LaunchDaemon (service binary, runs as root) ────
+- name: Deploy RustDesk service LaunchDaemon
+  ansible.builtin.template:
+    src: com.carriez.RustDesk_service.plist.j2
+    dest: /Library/LaunchDaemons/com.carriez.RustDesk_service.plist
+    owner: root
+    group: wheel
+    mode: "0644"
+  become: true
+  notify: Restart RustDesk service daemon
+
+# ── Deploy LaunchAgent (RustDesk --server, user session) ──
+- name: Deploy RustDesk server LaunchAgent
+  ansible.builtin.template:
+    src: com.carriez.RustDesk_server.plist.j2
+    dest: /Library/LaunchAgents/com.carriez.RustDesk_server.plist
+    owner: root
+    group: wheel
+    mode: "0644"
+  become: true
+  notify: Restart RustDesk server agent
+
+# ── Load services ─────────────────────────────────────────
+- name: Check if LaunchDaemon is loaded
+  ansible.builtin.shell: launchctl list | grep -q com.carriez.RustDesk_service
+  register: daemon_loaded
+  changed_when: false
+  failed_when: false
+  become: true
+
+- name: Load RustDesk service LaunchDaemon
+  ansible.builtin.command: launchctl load -w /Library/LaunchDaemons/com.carriez.RustDesk_service.plist
+  when: daemon_loaded.rc != 0
+  become: true
+
+- name: Check if LaunchAgent is loaded
+  ansible.builtin.shell: launchctl list | grep -q com.carriez.RustDesk_server
+  register: agent_loaded
+  changed_when: false
+  failed_when: false
+
+- name: Load RustDesk server LaunchAgent
+  ansible.builtin.command: launchctl load -w /Library/LaunchAgents/com.carriez.RustDesk_server.plist
+  when: agent_loaded.rc != 0
+
+# ── Login item ────────────────────────────────────────────
+- name: Check if RustDesk is a login item
+  ansible.builtin.shell: >
+    osascript -e 'tell application "System Events" to get the name of every login item'
+  register: login_items
+  changed_when: false
+
+- name: Add RustDesk as login item
+  ansible.builtin.command: >
+    osascript -e 'tell application "System Events" to make login item at end
+    with properties {path:"{{ rustdesk_app_path }}", hidden:true}'
+  when: "'RustDesk' not in login_items.stdout"
+
+# ── Firewall rules ────────────────────────────────────────
+- name: Allow RustDesk through firewall
+  ansible.builtin.command: /usr/libexec/ApplicationFirewall/socketfilterfw --add {{ rustdesk_app_path }}
+  become: true
+  register: fw_add
+  changed_when: "'added' in fw_add.stdout"
+
+- name: Unblock RustDesk in firewall
+  ansible.builtin.command: /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp {{ rustdesk_app_path }}
+  become: true
+  register: fw_unblock
+  changed_when: "'unblocked' in fw_unblock.stdout"
+
+# ── TCC permission reminder ──────────────────────────────
+- name: Remind about manual TCC permissions
+  ansible.builtin.debug:
+    msg: >
+      MANUAL STEP REQUIRED: RustDesk needs Accessibility and Screen Recording
+      permissions in System Settings > Privacy & Security. These cannot be
+      automated while SIP is enabled. Grant them if not already done.
+
+# ── Verify ────────────────────────────────────────────────
+- name: Get RustDesk ID
+  ansible.builtin.shell: "{{ rustdesk_binary }} --get-id 2>/dev/null"
+  register: rustdesk_id
+  changed_when: false
+
+- name: Check RustDesk processes
+  ansible.builtin.shell: pgrep -fl RustDesk || true
+  register: rustdesk_procs
+  changed_when: false
+
+- name: Display RustDesk status
+  ansible.builtin.debug:
+    msg:
+      - "RustDesk ID: {{ rustdesk_id.stdout }}"
+      - "Running processes: {{ rustdesk_procs.stdout_lines }}"
