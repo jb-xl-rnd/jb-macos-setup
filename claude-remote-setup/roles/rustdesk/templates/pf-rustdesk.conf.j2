@@ -1,0 +1,3 @@
+# RustDesk direct-server: allow only from Tailscale CGNAT range
+pass in quick proto tcp from 100.64.0.0/10 to any port 21118
+block in quick proto tcp from any to any port 21118

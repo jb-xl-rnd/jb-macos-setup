@@ -4,10 +4,58 @@
     name: rustdesk
     state: present
 
+# ── Lock down client: outbound-only, zero inbound surface ─
+- name: Ensure local RustDesk config directory exists
+  ansible.builtin.file:
+    path: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk"
+    state: directory
+    mode: "0755"
+
+- name: Ensure local RustDesk2.toml exists
+  ansible.builtin.copy:
+    content: |
+      rendezvous_server = ''
+      nat_type = 0
+      serial = 0
+      unlock_pin = ''
+      trusted_devices = ''
+
+      [options]
+    dest: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk/RustDesk2.toml"
+    mode: "0644"
+    force: false
+
+- name: Disable public relay registration
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk/RustDesk2.toml"
+    regexp: '^rendezvous_server\s*='
+    line: "rendezvous_server = ''"
+
+- name: Disable direct-server (no inbound port)
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk/RustDesk2.toml"
+    regexp: '^direct-server\s*='
+    line: "direct-server = 'N'"
+    insertafter: '^\[options\]'
+
+- name: Disable LAN discovery
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk/RustDesk2.toml"
+    regexp: '^deny-lan-discovery\s*='
+    line: "deny-lan-discovery = 'Y'"
+    insertafter: '^\[options\]'
+
+- name: Remove any permanent password (client never accepts connections)
+  ansible.builtin.lineinfile:
+    path: "{{ ansible_env.HOME }}/Library/Preferences/com.carriez.RustDesk/RustDesk2.toml"
+    regexp: '^permanent-password\s*='
+    state: absent
+
+# ── Shell alias ───────────────────────────────────────────
 - name: Add RustDesk aliases to .zshrc
   ansible.builtin.blockinfile:
     path: "{{ ansible_env.HOME }}/.zshrc"
     marker: "# {mark} ANSIBLE MANAGED - rustdesk aliases"
     block: |
-      # Quick-connect to remote RustDesk (Mac Mini)
-      alias cc-gui='open "rustdesk://connection/new/{{ rustdesk_remote_id }}"'
+      # Quick-connect to remote RustDesk over Tailscale (direct IP, no relay)
+      alias cc-gui='open "rustdesk://connection/new/{{ tailscale_hostname }}"'

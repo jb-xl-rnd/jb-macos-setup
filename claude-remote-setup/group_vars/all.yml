@@ -24,6 +24,7 @@ rustdesk_app_path: /Applications/RustDesk.app
 rustdesk_binary: /Applications/RustDesk.app/Contents/MacOS/RustDesk
 rustdesk_service_bin: /Applications/RustDesk.app/Contents/MacOS/service
 rustdesk_config_dir: "/Users/{{ target_user }}/Library/Preferences/com.carriez.RustDesk"
+# RustDesk ID (for reference; connections use tailscale_hostname directly)
 rustdesk_remote_id: ""
 # Permanent password for unattended access (use ansible-vault in production)
 rustdesk_password: "CHANGE_ME"

@@ -22,3 +22,7 @@
   ansible.builtin.shell: |
     launchctl unload /Library/LaunchAgents/com.carriez.RustDesk_server.plist 2>/dev/null || true
     launchctl load -w /Library/LaunchAgents/com.carriez.RustDesk_server.plist
+
+- name: Reload pf
+  ansible.builtin.shell: pfctl -f /etc/pf.conf && pfctl -e 2>/dev/null; true
+  become: true

@@ -60,6 +60,21 @@
     insertafter: '^\[options\]'
   notify: Restart RustDesk services
 
+- name: Enable direct IP access (bypass public rendezvous server)
+  ansible.builtin.lineinfile:
+    path: "{{ rustdesk_config_dir }}/RustDesk2.toml"
+    regexp: '^direct-server\s*='
+    line: "direct-server = 'Y'"
+    insertafter: '^\[options\]'
+  notify: Restart RustDesk services
+
+- name: Clear rendezvous server (disable public relay/ID registration)
+  ansible.builtin.lineinfile:
+    path: "{{ rustdesk_config_dir }}/RustDesk2.toml"
+    regexp: '^rendezvous_server\s*='
+    line: "rendezvous_server = ''"
+  notify: Restart RustDesk services
+
 # ── Fix file ownership ────────────────────────────────────
 - name: Fix RustDesk config directory ownership
   ansible.builtin.file:
@@ -128,18 +143,39 @@
     with properties {path:"{{ rustdesk_app_path }}", hidden:true}'
   when: "'RustDesk' not in login_items.stdout"
 
-# ── Firewall rules ────────────────────────────────────────
-- name: Allow RustDesk through firewall
+# ── Application firewall rules ────────────────────────────
+- name: Allow RustDesk through application firewall
   ansible.builtin.command: /usr/libexec/ApplicationFirewall/socketfilterfw --add {{ rustdesk_app_path }}
   become: true
   register: fw_add
   changed_when: "'added' in fw_add.stdout"
 
-- name: Unblock RustDesk in firewall
+- name: Unblock RustDesk in application firewall
   ansible.builtin.command: /usr/libexec/ApplicationFirewall/socketfilterfw --unblockapp {{ rustdesk_app_path }}
   become: true
   register: fw_unblock
   changed_when: "'unblocked' in fw_unblock.stdout"
+
+# ── pf firewall: restrict port 21118 to Tailscale only ───
+- name: Deploy pf anchor for RustDesk
+  ansible.builtin.template:
+    src: pf-rustdesk.conf.j2
+    dest: /etc/pf.anchors/rustdesk
+    owner: root
+    group: wheel
+    mode: "0644"
+  become: true
+  notify: Reload pf
+
+- name: Ensure RustDesk pf anchor is loaded in pf.conf
+  ansible.builtin.blockinfile:
+    path: /etc/pf.conf
+    marker: "# {mark} ANSIBLE MANAGED - rustdesk pf anchor"
+    block: |
+      anchor "rustdesk"
+      load anchor "rustdesk" from "/etc/pf.anchors/rustdesk"
+  become: true
+  notify: Reload pf
 
 # ── TCC permission reminder ──────────────────────────────
 - name: Remind about manual TCC permissions
