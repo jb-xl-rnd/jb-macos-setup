@@ -168,8 +168,8 @@
   ],
   "npm_packages": [
     {
-      "name": "ccusage",
-      "description": "Claude Code usage tracker - shows API usage and costs for Claude Code",
+      "name": "@openai/codex",
+      "description": "OpenAI Codex CLI agent",
       "global": true
     }
   ]
