@@ -179,11 +179,11 @@ To disable server mode:
 ```
 
 ### Core Development Environment
-- **Homebrew**: Package manager with 200+ pre-configured packages
-- **Development Tools**: git, neovim (LazyVim), VS Code, tmux
-- **Languages**: Python 3.12+, Node.js, Go, Deno
-- **Build Tools**: cmake, gcc, autoconf, automake
-- **Cloud Tools**: AWS CLI, Docker alternatives (OrbStack)
+- **Homebrew**: Package manager with ~60 curated leaf packages (dependencies managed automatically)
+- **Development Tools**: git, gh, neovim (LazyVim), VS Code, tmux
+- **Languages**: Python 3.11+ (pyenv), Node.js, Go, Deno
+- **Build Tools**: cmake, ninja, automake
+- **Cloud Tools**: AWS CLI, S3 tools, OrbStack (Docker)
 
 ### Shell Environment
 - **Custom Prompt**: Git-aware, minimalist design
@@ -240,12 +240,16 @@ Configure additional models in `config/llm_config.json`:
 ## Configuration
 
 ### Package Configuration (`config/packages.json`)
-Define which packages to install:
+Define which packages to install. Only leaf packages are listed -- Homebrew manages transitive dependencies automatically:
 ```json
 {
-  "brew_packages": [...],
-  "brew_cask_apps": [...],
-  "mas_apps": [...]
+  "brew_packages": [...],      // ~60 top-level formulae
+  "brew_cask_apps": [...],     // GUI applications
+  "mas_apps": [...],           // Mac App Store apps
+  "brew_taps": [...],          // Third-party taps
+  "brew_tap_packages": [...],  // Packages from taps (ntfs-3g-mac, sshpass)
+  "pip_packages": [...],       // Python packages (installed via uv)
+  "npm_packages": [...]        // Global npm packages
 }
 ```
 
