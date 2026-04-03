@@ -93,6 +93,12 @@ defaults write com.apple.symbolichotkeys AppleSymbolicHotKeys -dict-add 64 '{ en
 /System/Library/PrivateFrameworks/SystemAdministration.framework/Resources/activateSettings -u 2>/dev/null || true
 print_style "Spotlight shortcut disabled — set Raycast hotkey to Cmd+Space in Raycast preferences" "success"
 
+# Tighten menu bar icon spacing (fits more status items before they collide with app menus)
+print_style "Setting tighter menu bar icon spacing..." "info"
+defaults -currentHost write -globalDomain NSStatusItemSpacing -int 2
+defaults -currentHost write -globalDomain NSStatusItemSelectionPadding -int 2
+print_style "Menu bar spacing reduced (takes effect after logout/restart)" "success"
+
 # Install oh-my-zsh if using zsh and not already installed
 if [ "$CURRENT_SHELL" = "zsh" ] && [ ! -d "$HOME/.oh-my-zsh" ]; then
     print_style "Installing oh-my-zsh..." "info"
