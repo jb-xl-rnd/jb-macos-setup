@@ -58,6 +58,7 @@
     "install_dutis": true,
     "dutis_auto_configure": true,
     "use_kitty_pane_info": true,
-    "enable_server_mode": true
+    "enable_server_mode": true,
+    "use_claude_aliases": true
   }
 }

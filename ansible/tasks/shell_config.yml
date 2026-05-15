@@ -43,3 +43,11 @@
     marker: "# {mark} ANSIBLE MANAGED BLOCK - Kitty Pane Info"
     block: "{{ zsh_additions | selectattr('name', 'equalto', 'kitty_pane_info') | map(attribute='content') | join('') }}"
   when: use_kitty_pane_info | bool
+
+- name: Configure zshrc with Claude Code aliases
+  blockinfile:
+    path: ~/.zshrc
+    create: yes
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - Claude Aliases"
+    block: "{{ zsh_additions | selectattr('name', 'equalto', 'claude_aliases') | map(attribute='content') | join('') }}"
+  when: use_claude_aliases | bool

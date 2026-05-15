@@ -15,6 +15,7 @@
     use_custom_prompt: "{{ feature_flags.custom_shell_prompt | default(false) }}"
     use_alias_compat: "{{ feature_flags.alias_compatibility | default(false) }}"
     use_kitty_pane_info: "{{ feature_flags.use_kitty_pane_info | default(false) }}"
+    use_claude_aliases: "{{ feature_flags.use_claude_aliases | default(true) }}"
     install_dutis: "{{ feature_flags.install_dutis | default(true) }}"
     dutis_auto_configure: "{{ feature_flags.dutis_auto_configure | default(true) }}"
     install_llama_cpp: "{{ llm_config.feature_flags.install_llama_cpp | default(false) }}"

@@ -34,6 +34,11 @@
       "name": "pinta_alias",
       "description": "Pinta Intel workaround alias (temporary fix for ARM64 icon issue)",
       "content": "# Temporary workaround for Pinta ARM64 icon issue\n# GitHub: https://github.com/PintaProject/Pinta/issues/1605\nalias pinta='arch -x86_64 /Applications/Pinta.app/Contents/MacOS/Pinta'"
+    },
+    {
+      "name": "claude_aliases",
+      "description": "Claude Code opusmagnum alias. IS_SANDBOX=1 bypasses the root-user guard on --dangerously-skip-permissions so the alias works on headless/reproducible Macs that may launch claude as root.",
+      "content": "alias opusmagnum='IS_SANDBOX=1 claude --verbose --dangerously-skip-permissions'"
     }
   ]
 }
