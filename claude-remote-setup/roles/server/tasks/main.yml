@@ -84,14 +84,15 @@
       fi
 
 # ── 7. Shell aliases ──────────────────────────────────────
-- name: Add shell aliases to ~/.zshrc
+# opusmagnum, sudoopus and the sudo/claude root guards are owned by the main
+# playbook (config/shell_config.json → claude_aliases). This block used to define
+# its own opusmagnum, which silently overrode or was overridden by that one
+# depending on order, so it is now removed wherever it exists.
+- name: Remove the old claude aliases block from ~/.zshrc
   blockinfile:
     path: "{{ ansible_env.HOME }}/.zshrc"
-    create: yes
     marker: "# {mark} ANSIBLE MANAGED - claude aliases"
-    block: |
-      # Run Claude Code in dangerously-skip-permissions mode
-      alias opusmagnum="claude --allow-dangerously-skip-permissions"
+    state: absent
 
 # ── 8. Energy settings — always on, never sleep ───────────
 - name: Enforce always-on power settings
