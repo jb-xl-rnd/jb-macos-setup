@@ -43,6 +43,20 @@
     var: brew_result
     verbosity: 1
 
+- name: Debug - Display cask app format
+  debug:
+    var: brew_cask_apps
+    verbosity: 1
+
+- name: Install Cask applications
+  community.general.homebrew_cask:
+    name: "{{ item.name }}"
+    state: present
+  loop: "{{ brew_cask_apps }}"
+  ignore_errors: yes
+
+# Must run after casks: gromgit/fuse formulae (ntfs-3g-mac, ext4fuse-mac)
+# fatally require the macfuse cask's /usr/local/include/fuse.h at install time
 - name: Install Homebrew tap packages
   community.general.homebrew:
     name: "{{ item.name }}"
@@ -57,18 +71,6 @@
     var: brew_tap_result
     verbosity: 1
   when: brew_tap_result is defined
-  
-- name: Debug - Display cask app format
-  debug:
-    var: brew_cask_apps
-    verbosity: 1
-
-- name: Install Cask applications
-  community.general.homebrew_cask:
-    name: "{{ item.name }}"
-    state: present
-  loop: "{{ brew_cask_apps }}"
-  ignore_errors: yes
 
 - name: Install Mac App Store applications
   community.general.mas:

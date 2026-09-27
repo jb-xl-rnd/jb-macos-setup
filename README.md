@@ -97,7 +97,7 @@ MacOS/
     ├── AEROSPACE_CHEATSHEET.md
     ├── LLM_INTEGRATION_PLAN.md
     ├── PintaInstallationWorkaround.md
-    └── SetupNTFSSupportMacOS.md
+    └── SetupNTFSSupportMacOS.md  # NTFS (rw) + ext4 (ro) drive support
 ```
 
 ## Installation Methods
@@ -202,6 +202,14 @@ To disable server mode:
 - **dutis**: Command-line tool for file associations
 - **Automated Configuration**: Set default apps for file types
 
+### Windows & Linux Drive Support (NTFS / ext4)
+- **NTFS read-write**: macFUSE + `ntfs-3g` (macOS on its own only mounts NTFS read-only)
+- **ext4 read-only**: `ext4fuse`, plus `e2fsprogs` (keg-only) for `mkfs.ext4` / `fsck.ext4`
+- **Manual mounts**: `sudo ntfs-3g …` / `sudo ext4fuse …`. Nothing auto-mounts
+- **Kernel extension approval**: one-time approval + restart, and it has to be **redone after macFUSE updates**
+
+See `docs/SetupNTFSSupportMacOS.md` for setup, usage, limitations, and a self-test.
+
 ## LLM Setup
 
 The LLM integration provides local AI capabilities:
@@ -247,7 +255,7 @@ Define which packages to install. Only leaf packages are listed -- Homebrew mana
   "brew_cask_apps": [...],     // GUI applications
   "mas_apps": [...],           // Mac App Store apps
   "brew_taps": [...],          // Third-party taps
-  "brew_tap_packages": [...],  // Packages from taps (ntfs-3g-mac, sshpass)
+  "brew_tap_packages": [...],  // Packages from taps (ntfs-3g-mac, ext4fuse-mac, sshpass)
   "pip_packages": [...],       // Python packages (installed via uv)
   "npm_packages": [...]        // Global npm packages
 }
@@ -342,6 +350,11 @@ To manually restore security settings:
 - Check firewall settings
 - Ensure server is bound to correct interface (0.0.0.0 for external)
 - Verify model file exists in `~/llm-workspace/models/`
+
+### NTFS/ext4 Mount Does Nothing, or "System Extension Blocked"
+- The macFUSE kernel extension isn't approved. This usually happens after a macFUSE or macOS update gives the kext a new bundle ID
+- Allow "Benjamin Fleischer" in System Settings → Privacy & Security, then restart from the prompt
+- If it still fails after that, the Allow button was probably stale; see `docs/SetupNTFSSupportMacOS.md`
 
 ## Testing
 

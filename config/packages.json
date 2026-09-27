@@ -15,6 +15,7 @@
     {"name": "deno", "description": "Secure runtime for JavaScript and TypeScript"},
     {"name": "dnsmasq", "description": "Lightweight DNS forwarder and DHCP server"},
     {"name": "duti", "description": "Select default apps for document types and URL schemes"},
+    {"name": "e2fsprogs", "description": "ext4 utilities: mkfs.ext4, fsck.ext4 (keg-only, not on PATH)"},
     {"name": "espeak-ng", "description": "Speech synthesis engine"},
     {"name": "fd", "description": "Simple, fast and user-friendly alternative to find"},
     {"name": "ffmpeg", "description": "Play, record, convert, and stream audio and video"},
@@ -74,7 +75,7 @@
     {"name": "google-chrome", "description": "Web browser"},
     {"name": "keepassxc", "description": "Password manager app"},
     {"name": "kitty", "description": "GPU-based terminal emulator"},
-    {"name": "macfuse", "description": "File system integration"},
+    {"name": "macfuse", "description": "FUSE for macOS (required by ntfs-3g-mac, ext4fuse-mac)"},
     {"name": "obs", "description": "Open-source software for live streaming and screen recording"},
     {"name": "obsidian", "description": "Knowledge base that works on top of a local folder of plain text Markdown files"},
     {"name": "openscad@snapshot", "description": "Programmable 3D CAD modeller"},
@@ -153,6 +154,7 @@
     {"name": "hudochenkov/sshpass", "description": "sshpass formula"}
   ],
   "brew_tap_packages": [
+    {"name": "gromgit/fuse/ext4fuse-mac", "description": "Read-only ext4 driver for FUSE"},
     {"name": "gromgit/fuse/ntfs-3g-mac", "description": "Read-write NTFS driver for FUSE"},
     {"name": "hudochenkov/sshpass/sshpass", "description": "Non-interactive SSH password auth"}
   ],

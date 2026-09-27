@@ -82,7 +82,7 @@ execute_option() {
         5)
             print_style "Documentation:" "info"
             echo "1) Main README"
-            echo "2) NTFS Support Instructions"
+            echo "2) NTFS & ext4 Drive Support"
             echo "b) Back to main menu"
             read -p "Choose an option: " doc_choice
             case $doc_choice in
