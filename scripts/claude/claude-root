@@ -1,0 +1,126 @@
+#!/bin/bash
+# claude-root — run Claude Code as root without breaking the invoking user's
+# Claude config.
+#
+# Plain `sudo claude` on macOS keeps HOME=/Users/<you>, so the root session
+# rewrites ~/.claude.json and ~/.claude/ as root:0600. Every later normal
+# launch then cannot read its own config: a forced re-login on every run, and
+# every user-scope MCP server (the jungle) silently gone. (2026-09-27 incident:
+# 786 root-owned files under ~/.claude after three `sudo claude` runs.)
+#
+# This wrapper instead:
+#   - re-runs itself via `sudo -H`, so root Claude keeps its own config in
+#     /var/root
+#   - logs root in with CLAUDE_CODE_OAUTH_TOKEN from a `claude setup-token`
+#     token the user saves once in ~/.config/claude-root/oauth-token (root has
+#     no unlocked keychain under sudo, so a normal /login cannot be saved)
+#   - wires in the jungle with --mcp-config, reading the user's Claude Code
+#     jungle token at launch; the JSON carries ${JUNGLE_CLAUDE_TOKEN}, which
+#     Claude expands, so the token never appears in argv
+#   - loads only root's own settings (--setting-sources user), so no hook the
+#     user can edit ever runs as root
+#   - appends the user's global CLAUDE.md plus a note that the session is root
+#   - on exit, hands back to the user anything the session left root-owned in
+#     the working directory and the usual dotfile spots of their home
+#
+# Usage: claude-root [claude args...]
+#        sudoopus  ==  claude-root --verbose --dangerously-skip-permissions
+
+if [[ $EUID -ne 0 ]]; then
+  exec sudo -H --preserve-env=COLORTERM,TERM_PROGRAM "$0" "$@"
+fi
+
+if [[ -z $SUDO_USER || $SUDO_USER == root ]]; then
+  echo "claude-root: run this as your normal user; it calls sudo itself." >&2
+  exit 1
+fi
+
+user_home=$(dscl . -read "/Users/$SUDO_USER" NFSHomeDirectory 2>/dev/null | awk '{print $2}')
+if [[ -z $user_home || ! -d $user_home ]]; then
+  echo "claude-root: cannot resolve the home directory of $SUDO_USER." >&2
+  exit 1
+fi
+if [[ $HOME == "$user_home" || $HOME == "$user_home"/* ]]; then
+  echo "claude-root: HOME is still $HOME; refusing (that is what root-owns your Claude config)." >&2
+  exit 1
+fi
+
+claude_bin="$user_home/.local/bin/claude"
+[[ -x $claude_bin ]] || claude_bin=$(command -v claude)
+if [[ ! -x $claude_bin ]]; then
+  echo "claude-root: claude not found." >&2
+  exit 1
+fi
+
+umask 022
+# Root's copy must not self-update into /var/root; the user's install updates itself.
+export DISABLE_AUTOUPDATER=1
+for arg in "$@"; do
+  # Claude refuses --dangerously-skip-permissions as uid 0 unless IS_SANDBOX=1.
+  [[ $arg == --dangerously-skip-permissions ]] && export IS_SANDBOX=1
+done
+
+mcp_args=()
+token_file="$user_home/.config/xl-mcp/jungle-claude-code.token"
+if [[ -r $token_file ]]; then
+  jungle_url=$(plutil -extract mcpServers.jungle.url raw -o - "$user_home/.claude.json" 2>/dev/null)
+  [[ -n $jungle_url ]] || jungle_url=https://jungle-pi-01.tail0f84e9.ts.net/mcp
+  JUNGLE_CLAUDE_TOKEN=$(tr -d '\r\n' < "$token_file")
+  export JUNGLE_CLAUDE_TOKEN
+  mcp_args=(--mcp-config "{\"mcpServers\":{\"jungle\":{\"type\":\"http\",\"url\":\"$jungle_url\",\"headers\":{\"Authorization\":\"Bearer \${JUNGLE_CLAUDE_TOKEN}\"}}}}")
+else
+  echo "claude-root: no jungle token at $token_file; starting without the jungle." >&2
+fi
+
+note="You are Claude Code running as ROOT via claude-root, on behalf of $SUDO_USER.
+- Your own Claude config lives in /var/root. $SUDO_USER's home is $user_home; where the instructions below say ~, they mean $user_home.
+- Never modify $user_home/.claude or $user_home/.claude.json.
+- Run user-level tools as the user, not as root: sudo -u $SUDO_USER -H brew|git|uv|npm ...
+- Files this session leaves root-owned in the working directory or $SUDO_USER's dotfiles are handed back to $SUDO_USER on exit; anything elsewhere under $user_home is not, so create files there as the user."
+if [[ -r $user_home/.claude/CLAUDE.md ]]; then
+  note+=$'\n\n'"$(cat "$user_home/.claude/CLAUDE.md")"
+fi
+
+oauth_file="$user_home/.config/claude-root/oauth-token"
+if [[ ! -s $oauth_file ]]; then
+  cat >&2 <<EOF
+claude-root: no login token at $oauth_file.
+Root has no unlocked keychain under sudo, so /login cannot be saved. Once, as $SUDO_USER (not root):
+  claude setup-token                       # prints a long-lived token; copy it
+  mkdir -m 700 -p ~/.config/claude-root
+  pbpaste | tr -d '\r\n ' > ~/.config/claude-root/oauth-token && chmod 600 ~/.config/claude-root/oauth-token
+EOF
+  exit 1
+fi
+CLAUDE_CODE_OAUTH_TOKEN=$(tr -d '\r\n ' < "$oauth_file")
+export CLAUDE_CODE_OAUTH_TOKEN
+
+# Hand back root-owned paths matching the given find expression.
+hand_back() {
+  local f list=()
+  while IFS= read -r -d '' f; do
+    list+=("$f")
+  done < <(find "$@" -user 0 -print0 2>/dev/null)
+  (( ${#list[@]} )) || return 0
+  chown -h "$SUDO_UID:$SUDO_GID" "${list[@]}"
+  echo "claude-root: handed ${#list[@]} root-owned path(s) back to $SUDO_USER:" >&2
+  printf '  %s\n' "${list[@]:0:10}" >&2
+  (( ${#list[@]} > 10 )) && echo "  ..." >&2
+}
+
+mark=$(mktemp /tmp/claude-root.XXXXXX) || exit 1
+cleanup() {
+  hand_back "$user_home" -maxdepth 1 -newer "$mark"
+  hand_back "$user_home/.claude" "$user_home/.config" "$user_home/.local/bin" "$user_home/.ssh" -newer "$mark"
+  if [[ $PWD == "$user_home"/* ]]; then
+    hand_back "$PWD" -xdev -newer "$mark"
+  fi
+  rm -f "$mark"
+}
+trap cleanup EXIT
+
+# User settings only (root's own, in /var/root). Project and local settings are
+# files the user can edit, and hooks in them would run as root. Launched from the
+# user's home, the "project" settings are the user's own ~/.claude/settings.json,
+# so all of their hooks (peon-ping) ran as root and root-owned their state files.
+"$claude_bin" "${mcp_args[@]}" --setting-sources user --append-system-prompt "$note" "$@"

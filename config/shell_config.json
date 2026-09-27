@@ -37,8 +37,8 @@
     },
     {
       "name": "claude_aliases",
-      "description": "Claude Code opusmagnum alias. IS_SANDBOX=1 bypasses the root-user guard on --dangerously-skip-permissions so the alias works on headless/reproducible Macs that may launch claude as root.",
-      "content": "alias opusmagnum='IS_SANDBOX=1 claude --verbose --dangerously-skip-permissions'"
+      "description": "Claude Code aliases. opusmagnum: IS_SANDBOX=1 bypasses the root-user guard on --dangerously-skip-permissions (needed on headless Macs whose genuine root login has HOME=/var/root). sudoopus/claude-root: run Claude as root safely (own config in /var/root, jungle wired in, files handed back). The sudo()/claude() guards stop `sudo claude` and `sudo -s` shells from root-owning ~/.claude.json, which forces a re-login on every launch and drops user-scope MCP servers.",
+      "content": "alias opusmagnum='IS_SANDBOX=1 claude --verbose --dangerously-skip-permissions'\n# Root Claude, done safely: own config in /var/root, jungle wired in, files handed back (~/.local/bin/claude-root)\nalias sudoopus='claude-root --verbose --dangerously-skip-permissions'\n# `sudo claude` keeps HOME=~ and root-owns ~/.claude.json (re-login on every launch, user MCP servers gone)\nsudo() {\n  case \"$1\" in\n    claude) print -u2 \"sudo $1 -> claude-root\"; shift; claude-root \"$@\" ;;\n    opusmagnum|sudoopus) print -u2 \"sudo $1 -> sudoopus\"; shift; claude-root --verbose --dangerously-skip-permissions \"$@\" ;;\n    *) command sudo \"$@\" ;;\n  esac\n}\n# A root shell from `sudo -s` still has HOME=~, so refuse there too\nclaude() {\n  if [[ $EUID -eq 0 && $HOME == /Users/* ]]; then\n    print -u2 \"claude: refusing to run as root with HOME=$HOME; leave the root shell and use claude-root or sudoopus\"\n    return 1\n  fi\n  command claude \"$@\"\n}"
     }
   ]
 }
